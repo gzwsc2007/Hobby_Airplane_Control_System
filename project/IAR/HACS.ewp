@@ -306,6 +306,7 @@
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\STM32F4xx_HAL_Driver\Inc</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\FreeRTOS\Source\include</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\FreeRTOS\Source\portable\IAR\ARM_CM4F</state>
+          <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\hacs\device\inc</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1912,6 +1913,9 @@
   </group>
   <group>
     <name>device</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\device\src\hmc5883.c</name>
+    </file>
   </group>
   <group>
     <name>platform</name>
@@ -1919,7 +1923,19 @@
       <name>$PROJ_DIR$\..\..\software\hacs\platform\src\hacs_debug_uart.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\platform\src\hacs_gpio.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\platform\src\hacs_i2c_master.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\software\hacs\platform\src\hacs_platform.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\platform\src\hacs_platform_resources.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\platform\src\hacs_spi_master.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\software\third_party\CMSIS\Device\ST\STM32F4xx\Source\Templates\iar\startup_stm32f411xe.s</name>

@@ -2,7 +2,7 @@
 #include "hacs_debug_uart.h"
 
 #include "stm32f4xx_hal.h"
-#include "hacs_pin_defines.h"
+#include "hacs_platform_resources.h"
 
 static UART_HandleTypeDef UartHandle; 
 

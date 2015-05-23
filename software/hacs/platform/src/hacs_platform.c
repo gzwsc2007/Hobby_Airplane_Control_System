@@ -1,9 +1,14 @@
 #include <stdio.h>
 #include "hacs_platform.h"
+#include "hacs_platform_resources.h"
 #include "hacs_debug_uart.h"
+#include "hacs_spi_master.h"
+#include "hacs_i2c_master.h"
 #include "stm32f4xx_hal.h"
 #include "FreeRTOS.h"
 #include "task.h"
+
+#include "hmc5883.h"
 
 /* Platform static data */
 uint8_t hacs_critical_ref_count = 0; // Critical section reference count
@@ -15,29 +20,36 @@ static void error_handler(void);
 void hacs_platform_init(void)
 {
 	/* STM32F4xx HAL library initialization:
-       - Configure the Flash prefetch, Flash preread and Buffer caches
-       - Systick timer is configured by default as source of time base, but user 
-             can eventually implement his proper time base source (a general purpose 
-             timer for example or other time source), keeping in mind that Time base 
-             duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and 
-             handled in milliseconds basis.
-       - Low Level Initialization
-     */
-    HAL_Init();
+   - Configure the Flash prefetch, Flash preread and Buffer caches
+   - Systick timer is configured by default as source of time base, but user 
+         can eventually implement his proper time base source (a general purpose 
+         timer for example or other time source), keeping in mind that Time base 
+         duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and 
+         handled in milliseconds basis.
+   - Low Level Initialization
+  */
+  HAL_Init();
   
-    /* Configure the System clock to 100 MHz */
-    system_clock_config();
+  /* Configure the System clock to 100 MHz */
+  system_clock_config();
 
 	/* Init debug UART */
-    debug_uart_init(115200);
+  debug_uart_init(115200);
 
 	/* Init SPI master */
+  spi_master_init(HACS_SPI_NRF24, 1000000, HACS_SPI_CPOL_1, HACS_SPI_CPHA_0);
 
 	/* Init I2C master */
+  if (i2c_master_init(HACS_I2C, 50000) != 0) {
+    printf("Error in i2c_master_init!\n");
+  }
 
 	/* Init USART */
 
 	/* Init sensors and radio */
+  if (hmc5883_init() != 0) {
+    printf("Error in hmc5883_init!\n");
+  }
 }
 
 // Redirect putc to UART send

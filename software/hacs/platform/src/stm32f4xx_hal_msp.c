@@ -47,7 +47,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "hacs_pin_defines.h"
+#include "hacs_platform_resources.h"
 
 /** @addtogroup STM32F4xx_HAL_Driver
   * @{
@@ -183,6 +183,32 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
     // TODO: initialize DMA and IT
 
     __SPI3_CLK_ENABLE();
+  } else if (hspi->Instance == SPI2) {
+    GPIO_InitTypeDef  GPIO_InitStruct;
+
+    SPI2_MOSI_GPIO_CLK_ENABLE();
+    SPI2_MISO_GPIO_CLK_ENABLE();
+    SPI2_SCK_GPIO_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin       = SPI2_MOSI_PIN;
+    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull      = GPIO_NOPULL;
+    GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
+    GPIO_InitStruct.Alternate = SPI2_MOSI_AF;
+    HAL_GPIO_Init(SPI2_MOSI_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin       = SPI2_SCK_PIN;
+    GPIO_InitStruct.Alternate = SPI2_SCK_AF;
+    HAL_GPIO_Init(SPI2_SCK_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin       = SPI2_MISO_PIN;
+    GPIO_InitStruct.Mode      = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Alternate = SPI2_MISO_AF;
+    HAL_GPIO_Init(SPI2_MISO_PORT, &GPIO_InitStruct);
+
+    // TODO: initialize DMA and IT
+
+    __SPI2_CLK_ENABLE();
   }
 }
 
@@ -197,6 +223,44 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
     HAL_GPIO_DeInit(SPI3_MOSI_PORT, SPI3_MOSI_PIN);
     HAL_GPIO_DeInit(SPI3_MISO_PORT, SPI3_MISO_PIN);
     HAL_GPIO_DeInit(SPI3_SCK_PORT, SPI3_SCK_PIN);
+  } else if (hspi->Instance == SPI2) {
+    __SPI2_FORCE_RESET();
+    __SPI2_RELEASE_RESET();
+
+    __SPI2_CLK_DISABLE();
+
+    HAL_GPIO_DeInit(SPI2_MOSI_PORT, SPI2_MOSI_PIN);
+    HAL_GPIO_DeInit(SPI2_MISO_PORT, SPI2_MISO_PIN);
+    HAL_GPIO_DeInit(SPI2_SCK_PORT, SPI2_SCK_PIN);
+  }
+}
+
+void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
+{
+  GPIO_InitTypeDef GPIO_InitStruct;
+  if(hi2c->Instance==I2C1)
+  {
+    /* Peripheral clock enable */
+    __I2C1_CLK_ENABLE();
+
+    I2C1_SDA_GPIO_CLK_ENABLE();
+    I2C1_SCL_GPIO_CLK_ENABLE();
+
+    /**I2C1 GPIO Configuration    
+    */
+    GPIO_InitStruct.Pin = I2C1_SDA_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+    GPIO_InitStruct.Alternate = I2C1_SDA_AF;
+    HAL_GPIO_Init(I2C1_SDA_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = I2C1_SCL_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+    GPIO_InitStruct.Alternate = I2C1_SCL_AF;
+    HAL_GPIO_Init(I2C1_SCL_PORT, &GPIO_InitStruct);
   }
 }
 

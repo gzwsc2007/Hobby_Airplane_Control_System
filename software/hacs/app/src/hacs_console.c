@@ -49,8 +49,8 @@ void hacs_console_task(void *param)
 				console_put_eol();
 				debug_uart_putchar('>');
 			} else if (c == BS || c == DEL) {
-				console_put_bs();
 				if (cursor > 0) {
+					console_put_bs();
 					cursor--;
 				}
 			} else {
@@ -66,6 +66,7 @@ void hacs_console_task(void *param)
 			}
 		}
 
+		// TODO: change this to wait on an event (instead of contantly polling)
 		vTaskDelay(MS_TO_TICKS(40));
 	}
 }

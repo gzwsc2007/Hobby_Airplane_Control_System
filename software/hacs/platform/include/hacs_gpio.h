@@ -35,4 +35,12 @@ uint8_t gpio_read_pin(gpio_port_t port, gpio_pin_t pin);
 
 uint32_t gpio_read_port(gpio_port_t port);
 
+/* GPIO external interrupt */
+
+typedef void (*hacs_exti_cb_t)(void);
+
+int gpio_exti_init(gpio_port_t port, gpio_pin_t pin, hacs_exti_cb_t cb);
+int gpio_exti_enable(gpio_port_t port, gpio_pin_t pin);
+int gpio_exti_disable(gpio_port_t port, gpio_pin_t pin);
+
 #endif

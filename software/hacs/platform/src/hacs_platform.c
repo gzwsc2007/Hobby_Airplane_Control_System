@@ -41,14 +41,14 @@ void hacs_platform_init(void)
 
 	/* Init I2C master */
   if (i2c_master_init(HACS_I2C, 50000) != 0) {
-    printf("Error in i2c_master_init!\n");
+    printf("Error in i2c_master_init!\r\n");
   }
 
 	/* Init USART */
 
 	/* Init sensors and radio */
   if (hmc5883_init() != 0) {
-    printf("Error in hmc5883_init!\n");
+    printf("Error in hmc5883_init!\r\n");
   }
 }
 

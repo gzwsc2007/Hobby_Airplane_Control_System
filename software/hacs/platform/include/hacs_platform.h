@@ -2,6 +2,8 @@
 #define _HACS_PLATFORM_H_
 
 #include "FreeRTOSConfig.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #define MS_TO_TICKS(ms)                 ((ms * configTICK_RATE_HZ + 999) / 1000)
 
@@ -26,6 +28,13 @@ static inline void hacs_exit_critical(void)
 	if (hacs_critical_ref_count == 0) {
 		__enable_irq();
 	}
+}
+
+// Only works @ 100MHz CPU clock
+static inline void delay_us(uint32_t us)
+{
+    for (uint32_t i = 0; i < 100 * us; i++) {
+    }
 }
 
 #endif

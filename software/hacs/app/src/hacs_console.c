@@ -3,8 +3,6 @@
 #include "hacs_debug_uart.h"
 #include "hacs_console.h"
 #include "hacs_console_commands.h"
-#include "FreeRTOS.h"
-#include "task.h"
 
 #define LF  0x0A
 #define CR  0x0D

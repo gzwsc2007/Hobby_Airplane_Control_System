@@ -18,6 +18,13 @@ int i2c_master_init(hacs_i2c_t bus, uint32_t freq) {
   hi2c->Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
   hi2c->Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
 
+  HAL_I2C_Init(hi2c);
+
+  // This can prevent the BUSY flag being set
+  __I2C1_FORCE_RESET();
+  delay_us(1);
+  __I2C1_RELEASE_RESET();
+
   return HAL_I2C_Init(hi2c);
 }
 

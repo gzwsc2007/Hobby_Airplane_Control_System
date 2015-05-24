@@ -241,10 +241,9 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
   if(hi2c->Instance==I2C1)
   {
     /* Peripheral clock enable */
-    __I2C1_CLK_ENABLE();
-
     I2C1_SDA_GPIO_CLK_ENABLE();
     I2C1_SCL_GPIO_CLK_ENABLE();
+    __I2C1_CLK_ENABLE();
 
     /**I2C1 GPIO Configuration    
     */

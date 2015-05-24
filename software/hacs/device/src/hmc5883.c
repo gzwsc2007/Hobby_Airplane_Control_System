@@ -38,19 +38,31 @@ int hmc5883_is_ready() {
 	}
 }
 
-int hmc5883_update_xyz(uint16_t *px, uint16_t *py, uint16_t *pz) {
-	union {
-		uint8_t buf[6];
-		uint16_t vals[3];
-	} mag;
+int hmc5883_update_xyz(int16_t *px, int16_t *py, int16_t *pz) {
+	uint8_t buf[6];
+	int16_t x;
+	int16_t y;
+	int16_t z;
 	int retval = 0;
 
 	retval = i2c_master_read_mem(HACS_I2C, HMC5883_ADDR, HMC5883_DXA_REG, 
-															 mag.buf, sizeof(mag.buf));
+															 buf, sizeof(buf));
 
-	*px = mag.vals[0];
-	*pz = mag.vals[1];
-	*py = mag.vals[2];
+	x = buf[0];
+	x = x << 8;
+	x |= buf[1];
+
+	z = buf[2];
+	z = z << 8;
+	z |= buf[3];
+
+	y = buf[4];
+	y = y << 8;
+	y |= buf[5];
+
+	*px = x;
+	*pz = z;
+	*py = y;
 
 	return retval;
 }

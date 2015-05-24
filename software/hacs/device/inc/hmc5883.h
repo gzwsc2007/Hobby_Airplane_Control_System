@@ -18,6 +18,6 @@
 int hmc5883_init();
 int hmc5883_is_ready();
 
-int hmc5883_update_xyz(uint16_t *px, uint16_t *py, uint16_t *pz);
+int hmc5883_update_xyz(int16_t *px, int16_t *py, int16_t *pz);
 
 #endif

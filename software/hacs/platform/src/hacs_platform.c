@@ -9,6 +9,7 @@
 #include "task.h"
 
 #include "hmc5883.h"
+#include "nrf24l01.h"
 
 /* Platform static data */
 uint8_t hacs_critical_ref_count = 0; // Critical section reference count
@@ -19,6 +20,12 @@ static void error_handler(void);
 
 void hacs_platform_init(void)
 {
+  /* Turn on all GPIO clocks since we don't care about power */
+  __GPIOA_CLK_ENABLE();
+  __GPIOB_CLK_ENABLE();
+  __GPIOC_CLK_ENABLE();
+  __GPIOD_CLK_ENABLE();
+
 	/* STM32F4xx HAL library initialization:
    - Configure the Flash prefetch, Flash preread and Buffer caches
    - Systick timer is configured by default as source of time base, but user 
@@ -49,6 +56,10 @@ void hacs_platform_init(void)
 	/* Init sensors and radio */
   if (hmc5883_init() != 0) {
     printf("Error in hmc5883_init!\r\n");
+  }
+
+  if (nrf24_init() != 0) {
+    printf("Error in nrf24l01_init!\r\n");
   }
 }
 

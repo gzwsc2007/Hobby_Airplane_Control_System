@@ -1916,6 +1916,9 @@
     <file>
       <name>$PROJ_DIR$\..\..\software\hacs\device\src\hmc5883.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\device\src\nrf24l01.c</name>
+    </file>
   </group>
   <group>
     <name>platform</name>

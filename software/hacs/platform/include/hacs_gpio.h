@@ -10,8 +10,6 @@
 #ifndef _HACS_GPIO_H_
 #define _HACS_GPIO_H_
 
-#include "hacs_platform_resources.h"
-
 typedef enum {
   HACS_GPIO_MODE_OUTPUT_PP = 0,
   HACS_GPIO_MODE_OUTPUT_OD,
@@ -39,8 +37,12 @@ uint32_t gpio_read_port(gpio_port_t port);
 
 typedef void (*hacs_exti_cb_t)(void);
 
-int gpio_exti_init(gpio_port_t port, gpio_pin_t pin, hacs_exti_cb_t cb);
-int gpio_exti_enable(gpio_port_t port, gpio_pin_t pin);
-int gpio_exti_disable(gpio_port_t port, gpio_pin_t pin);
+// NOTE: make sure the pin has been configured properly using
+// gpio_init_pin (e.g. set to input mode) before calling this function
+int gpio_exti_init(gpio_port_t port, gpio_pin_t pin, 
+                   hacs_exti_cb_t cb);
+void gpio_exti_enable(gpio_port_t port, gpio_pin_t pin, 
+                      uint8_t rise, uint8_t fall);
+void gpio_exti_disable(gpio_port_t port, gpio_pin_t pin);
 
 #endif

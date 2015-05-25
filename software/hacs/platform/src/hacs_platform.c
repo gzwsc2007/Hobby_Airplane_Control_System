@@ -9,7 +9,6 @@
 #include "task.h"
 
 #include "hmc5883.h"
-#include "nrf24l01.h"
 
 /* Platform static data */
 uint8_t hacs_critical_ref_count = 0; // Critical section reference count
@@ -44,7 +43,7 @@ void hacs_platform_init(void)
   debug_uart_init(115200);
 
 	/* Init SPI master */
-  spi_master_init(HACS_SPI_NRF24, 1000000, HACS_SPI_CPOL_1, HACS_SPI_CPHA_0);
+  spi_master_init(HACS_SPI_NRF24, 100000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_0);
 
 	/* Init I2C master */
   if (i2c_master_init(HACS_I2C, 50000) != 0) {
@@ -53,13 +52,9 @@ void hacs_platform_init(void)
 
 	/* Init USART */
 
-	/* Init sensors and radio */
+	// TODO: Move sensor init into the sensor_manager thread
   if (hmc5883_init() != 0) {
     printf("Error in hmc5883_init!\r\n");
-  }
-
-  if (nrf24_init() != 0) {
-    printf("Error in nrf24l01_init!\r\n");
   }
 }
 

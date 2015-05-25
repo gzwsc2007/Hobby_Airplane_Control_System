@@ -1,10 +1,10 @@
 #ifndef _NRF24L01_H_
 #define _NRF24L01_H_
 
-#define NRF24_CSN_INACTIVE_HOLD_US	(1) // need at least 1 us of CSN inactive time
+#define NRF24_CSN_INACTIVE_HOLD_US	(2) // need some CSN inactive time
 
 #define NRF24_ACK  					(NRF24_COMMAND_W_TX_PAYLOAD)
-#define NRF24_NO_ACK 			    (NRF24_COMMAND_W_TX_PAYLOAD_NOACK)
+#define NRF24_NO_ACK 			  (NRF24_COMMAND_W_TX_PAYLOAD_NOACK)
 
 // Default device config: 1 byte CRC, PTX, Stand-I mode
 #define NRF24_BASE_CONFIGURATION (NRF24_EN_CRC | NRF24_CRCO | NRF24_PWR_UP)
@@ -162,9 +162,9 @@ typedef enum
 #define NRF24_EN_ACK_PAY                                0x02
 #define NRF24_EN_DYN_ACK                                0x01
 
-int nrf24_init(void);
+void nrf24_driver_task(void *param);
 
-int nrf24_send(uint8_t *data, uint8_t len, uint8_t no_ack);
+int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd);
 
 int nrf24_dump_registers(void);
 

@@ -4,6 +4,7 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "hacs_error_codes.h"
 
 #define MS_TO_TICKS(ms)                 ((ms * configTICK_RATE_HZ + 999) / 1000)
 

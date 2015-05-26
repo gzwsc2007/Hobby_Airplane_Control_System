@@ -14,9 +14,10 @@
 
 /*** Low-level helpers ***/
 static int nrf24_write_reg(uint8_t reg, uint8_t val);
+static int nrf24_read_reg(uint8_t reg, uint8_t *val);
 static int nrf24_burst_write(uint8_t cmd, uint8_t *data, uint8_t len);
 static int nrf24_burst_write_reg(uint8_t reg, uint8_t *data, uint8_t len);
-static int nrf24_read_reg(uint8_t reg, uint8_t *rbuf, uint8_t rlen);
+static int nrf24_burst_read(uint8_t reg, uint8_t *rbuf, uint8_t rlen);
 static int nrf24_send_cmd(uint8_t cmd);
 /** Helpers 
   * Partly ported from Mike McCauley's (mikem@open.com.au) 
@@ -33,16 +34,21 @@ static int nrf24_set_rf(NRF24DataRate dr, NRF24TransmitPower pwr);
 static int nrf24_init(void);
 static int nrf24_radio_config(void);
 static void nrf24_irq_handler(void);
+static int nrf24_recv(uint8_t *rbuf, uint8_t *plen);
 
 static uint8_t gnd_addr[] = {0x68,0x86,0x66,0x88,0x28};
-static uint8_t this_addr[] = {0xDE,0xAD,0xBE,0xEF,0x42};
 static xSemaphoreHandle send_sema4;
 static xSemaphoreHandle irq_sema4;
 static volatile uint8_t nrf24_status;
 
 void nrf24_driver_task(void *param) {
+  uint8_t rx_buf[32];
+  uint8_t rx_len;
+
   if (nrf24_init() != HACS_NO_ERROR) {
     printf("Error in nrf24l01_init!\r\n");
+  } else {
+    printf("NRF24 Init Complete!\r\n");
   }
 
   while(1) {
@@ -51,18 +57,19 @@ void nrf24_driver_task(void *param) {
 
     /* Handle the Radio IRQ */
     // Read status register
-    nrf24_read_reg(NRF24_REG_07_STATUS, (uint8_t *)&nrf24_status, sizeof(nrf24_status));
+    nrf24_read_reg(NRF24_REG_07_STATUS, (uint8_t *)&nrf24_status);
     
     if (nrf24_status & NRF24_RX_DR) {
-      // TODO: handle RX
+      rx_len = 0;
+      nrf24_recv(rx_buf, &rx_len);
+      rx_buf[rx_len] = 0; // prevent buffer overflow
+      printf("%s\r\n",rx_buf); // print out the recieved data for now
     }
 
     if (nrf24_status & NRF24_MAX_RT) {
       nrf24_send_cmd(NRF24_COMMAND_FLUSH_TX);
       xSemaphoreGive(send_sema4);
-    }
-
-    if (nrf24_status & NRF24_TX_DS) {
+    } else if (nrf24_status & NRF24_TX_DS) {
       xSemaphoreGive(send_sema4);
     }
 
@@ -83,6 +90,27 @@ static void nrf24_irq_handler(void) {
     priority task.  The macro used for this purpose is dependent on the port in
     use and may be called portEND_SWITCHING_ISR(). */
   portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+}
+
+static uint8_t nrf24_get_rx_payload_len(void) {
+  uint8_t len = 0;
+  nrf24_burst_read(NRF24_COMMAND_R_RX_PL_WID, &len, sizeof(len));
+  return len;
+}
+
+static int nrf24_recv(uint8_t *rbuf, uint8_t *plen) {
+  if (nrf24_status & NRF24_RX_DR) {
+    *plen = nrf24_get_rx_payload_len();
+    if (*plen <= NRF24_MAX_MESSAGE_LEN) {
+      nrf24_burst_read(NRF24_COMMAND_R_RX_PAYLOAD, rbuf, *plen);
+    } else {
+      return HACS_NRF24_RX_INVALID_LENGTH;
+    }
+  } else {
+    return HACS_NRF24_RX_NOT_READY;
+  }
+
+  return HACS_NO_ERROR;
 }
 
 static int nrf24_init(void) {
@@ -113,63 +141,72 @@ static int nrf24_radio_config(void) {
   if (retval != HAL_OK) {
     return retval;
   }
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
   retval = nrf24_clear_irq(NRF24_RX_DR | NRF24_TX_DS | NRF24_MAX_RT);
   if (retval != HAL_OK) {
     return retval;
   }
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
   retval = nrf24_send_cmd(NRF24_COMMAND_FLUSH_TX);
   if (retval != HAL_OK) {
     return retval;
   }
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
   retval = nrf24_send_cmd(NRF24_COMMAND_FLUSH_RX);
   if (retval != HAL_OK) {
     return retval;
   }
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
   retval = nrf24_set_channel(40);
   if (retval != HAL_OK) {
     return retval;
   }
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
-  retval = nrf24_set_payload_size(32);
-  if (retval != HAL_OK) {
-    return retval;
-  }
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
-
+  // Set remote address
   retval = nrf24_set_transmit_addr(gnd_addr, sizeof(gnd_addr));
   if (retval != HAL_OK) {
     return retval;
   }
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
+  // Configure Auto-retransmission delay and retry numbers
   retval = nrf24_write_reg(NRF24_REG_04_SETUP_RETR, 0xF3); // Important depending on ACK payload length
   if (retval != HAL_OK) {
     return retval;
   }
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
+/* Not needed because we use ACK with payload
+  // Set local address
   retval = nrf24_set_this_addr(this_addr, sizeof(this_addr));
   if (retval != HAL_OK) {
     return retval;
   }
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
+*/
 
+/* Not needed because we use DPL
+  // Set static payload length
+  retval = nrf24_set_payload_size(32);
+  if (retval != HAL_OK) {
+    return retval;
+  }
+*/
+
+  // Enable Dynamic Payload Length in the feature register
+  retval = nrf24_write_reg(NRF24_REG_1D_FEATURE, NRF24_EN_DPL | NRF24_EN_ACK_PAY);
+  if (retval != HAL_OK) {
+    return retval;
+  }
+
+  // Enable DPL on pipe 0 (which is the pipe we use to receive ACK)
+  retval = nrf24_write_reg(NRF24_REG_1C_DYNPD, NRF24_DPL_P0);
+  if (retval != HAL_OK) {
+    return retval;
+  }
+
+  // Configure RF channel and power
   retval = nrf24_set_rf(NRF24DataRate250kbps, NRF24TransmitPower0dBm);
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
   // Enter Standby-II mode as we don't care about power consumption
   NRF24_CE_HIGH();
-
-  printf("NRF24 Init Complete!\r\n");
 
   return retval;
 }
@@ -177,7 +214,6 @@ static int nrf24_radio_config(void) {
 int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd) {
   // Always clear the MAX_RT bit in status register
   nrf24_clear_irq(NRF24_MAX_RT);
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US); // need at least 1us delay before asserting CSN again
 
   // Write the payload
   nrf24_burst_write(ack_cmd, data, len);
@@ -185,11 +221,14 @@ int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd) {
   // Grab the send semaphore to wait for send-complete (500ms timeout)
   xSemaphoreTake(send_sema4, MS_TO_TICKS(500));
 
+  return nrf24_status;
+/*
   if (nrf24_status & NRF24_TX_DS) {
     return HACS_NO_ERROR;
   } else {
-    return HACS_RADIO_TX_FAILED;
+    return HACS_NRF24_TX_FAILED;
   }
+  */
 }
 
 /*
@@ -255,8 +294,6 @@ static int nrf24_set_transmit_addr(uint8_t *addr, uint8_t len)
     return retval;
   }
 
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
-
   // Set TX_ADDR
   return nrf24_burst_write_reg(NRF24_REG_10_TX_ADDR, addr, len);
 }
@@ -308,7 +345,7 @@ int nrf24_dump_registers(void) {
   uint8_t val;
 
   for (i = 0; i < sizeof(registers); i++) {
-    retval = nrf24_read_reg(registers[i], &val, sizeof(val));
+    retval = nrf24_read_reg(registers[i], &val);
     if (retval != HAL_OK) {
       return retval;
     }
@@ -332,8 +369,14 @@ static int nrf24_write_reg(uint8_t reg, uint8_t val)
   retval = spi_master_write(HACS_SPI_NRF24, cmd, sizeof(cmd));
   
   NRF24_CSN_HIGH();
+  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
   return retval;
+}
+
+static int nrf24_read_reg(uint8_t reg, uint8_t *val)
+{
+  return nrf24_burst_read((reg & NRF24_REGISTER_MASK) | NRF24_COMMAND_R_REGISTER, val, 1);
 }
 
 static int nrf24_burst_write(uint8_t cmd, uint8_t *data, uint8_t len)
@@ -348,6 +391,7 @@ static int nrf24_burst_write(uint8_t cmd, uint8_t *data, uint8_t len)
   }
 
   NRF24_CSN_HIGH();
+  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
   return retval;
 }
@@ -358,16 +402,16 @@ static int nrf24_burst_write_reg(uint8_t reg, uint8_t *data, uint8_t len)
                            data, len);
 }
 
-static int nrf24_read_reg(uint8_t reg, uint8_t *rbuf, uint8_t rlen)
+static int nrf24_burst_read(uint8_t cmd, uint8_t *rbuf, uint8_t rlen)
 {
-  uint8_t cmd[] = { (reg & NRF24_REGISTER_MASK) | NRF24_COMMAND_R_REGISTER };
   int retval;
 
   NRF24_CSN_LOW();
 
-  retval = spi_master_transfer(HACS_SPI_NRF24, cmd, sizeof(cmd), rbuf, rlen);
+  retval = spi_master_transfer(HACS_SPI_NRF24, &cmd, sizeof(cmd), rbuf, rlen);
 
   NRF24_CSN_HIGH();
+  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
   return retval;
 }
@@ -381,6 +425,7 @@ static int nrf24_send_cmd(uint8_t cmd)
   retval = spi_master_write(HACS_SPI_NRF24, &cmd, sizeof(cmd));
 
   NRF24_CSN_HIGH();
+  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 
   return retval;
 }

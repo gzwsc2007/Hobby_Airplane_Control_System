@@ -100,7 +100,7 @@ int gpio_exti_init(gpio_port_t port, gpio_pin_t pin,
   if (exti_port_assignment[pin_num] != NOT_ASSIGNED) {
     // Right now we just go ahead and overwrite the mapping, but
     // will return a warning code that indicates this situation..
-    retval = HACS_ERROR_EXTI_OVERWRITE;
+    retval = HACS_EXTI_OVERWRITE_WARN;
   }
 
   /* Enable SYSCFG Clock */

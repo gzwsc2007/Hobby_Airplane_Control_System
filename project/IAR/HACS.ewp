@@ -307,6 +307,8 @@
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\FreeRTOS\Source\include</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\FreeRTOS\Source\portable\IAR\ARM_CM4F</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\hacs\device\inc</state>
+          <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\MAVLink_output\hacs</state>
+          <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\MAVLink_output</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1903,6 +1905,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_console_commands.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_telemetry.c</name>
     </file>
   </group>
   <group>

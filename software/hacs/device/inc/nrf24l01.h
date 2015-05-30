@@ -1,6 +1,9 @@
 #ifndef _NRF24L01_H_
 #define _NRF24L01_H_
 
+#include "hacs_platform.h"
+#include "queue.h"
+
 #define NRF24_CSN_INACTIVE_HOLD_US	(2) // need some CSN inactive time
 
 #define NRF24_ACK  					(NRF24_COMMAND_W_TX_PAYLOAD)
@@ -15,6 +18,13 @@
 #ifndef NRF24_MAX_MESSAGE_LEN
 #define NRF24_MAX_MESSAGE_LEN 32
 #endif
+
+typedef struct {
+	uint8_t len;
+	uint8_t buf[NRF24_MAX_MESSAGE_LEN];
+} nrf24_msg_t;
+
+#define NRF24_MSG_QUEUE_LENGTH 5
 
 // Defines convenient values for setting data rates in setRF()
 typedef enum
@@ -163,6 +173,8 @@ typedef enum
 #define NRF24_EN_DYN_ACK                                0x01
 
 void nrf24_driver_task(void *param);
+
+xQueueHandle nrf24_get_msg_queue(void);
 
 int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd);
 

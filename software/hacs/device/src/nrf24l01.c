@@ -39,11 +39,15 @@ static int nrf24_recv(uint8_t *rbuf, uint8_t *plen);
 static uint8_t gnd_addr[] = {0x68,0x86,0x66,0x88,0x28};
 static xSemaphoreHandle send_sema4;
 static xSemaphoreHandle irq_sema4;
+static xQueueHandle msg_queue;
 static volatile uint8_t nrf24_status;
 
+xQueueHandle nrf24_get_msg_queue(void) {
+  return msg_queue;
+}
+
 void nrf24_driver_task(void *param) {
-  uint8_t rx_buf[32];
-  uint8_t rx_len;
+  nrf24_msg_t rx;
 
   if (nrf24_init() != HACS_NO_ERROR) {
     printf("Error in nrf24l01_init!\r\n");
@@ -56,14 +60,19 @@ void nrf24_driver_task(void *param) {
     xSemaphoreTake(irq_sema4, portMAX_DELAY);
 
     /* Handle the Radio IRQ */
+
     // Read status register
     nrf24_read_reg(NRF24_REG_07_STATUS, (uint8_t *)&nrf24_status);
     
+    // Clear NRF24 IRQ
+    delay_us(NRF24_CSN_INACTIVE_HOLD_US);
+    nrf24_clear_irq(nrf24_status & (NRF24_RX_DR | NRF24_TX_DS | NRF24_MAX_RT));
+
     if (nrf24_status & NRF24_RX_DR) {
-      rx_len = 0;
-      nrf24_recv(rx_buf, &rx_len);
-      rx_buf[rx_len] = 0; // prevent buffer overflow
-      printf("%s\r\n",rx_buf); // print out the recieved data for now
+      rx.len = 0;
+      nrf24_recv(rx.buf, &rx.len);
+
+      xQueueSend(msg_queue, &rx, MS_TO_TICKS(100));
     }
 
     if (nrf24_status & NRF24_MAX_RT) {
@@ -72,10 +81,6 @@ void nrf24_driver_task(void *param) {
     } else if (nrf24_status & NRF24_TX_DS) {
       xSemaphoreGive(send_sema4);
     }
-
-    // Clear NRF24 IRQ
-    delay_us(NRF24_CSN_INACTIVE_HOLD_US);
-    nrf24_clear_irq(nrf24_status & (NRF24_RX_DR | NRF24_TX_DS | NRF24_MAX_RT));
   }
 }
 
@@ -122,7 +127,6 @@ static int nrf24_init(void) {
 	gpio_init_pin(NRF24_IRQ_PORT, NRF24_IRQ_PIN, HACS_GPIO_MODE_INPUT,
                 HACS_GPIO_NO_PULL);
 	gpio_exti_init(NRF24_IRQ_PORT, NRF24_IRQ_PIN, nrf24_irq_handler);
-
 	gpio_exti_enable(NRF24_IRQ_PORT, NRF24_IRQ_PIN, 0, 1);
 
 	return nrf24_radio_config();
@@ -136,6 +140,9 @@ static int nrf24_radio_config(void) {
 
   // Create a binary semaphore for irq handling
   irq_sema4 = xSemaphoreCreateBinary();
+
+  // Create a queue for receiving messages over the air
+  msg_queue = xQueueCreate(NRF24_MSG_QUEUE_LENGTH, sizeof(nrf24_msg_t));
 
   retval = nrf24_soft_reset();
   if (retval != HAL_OK) {

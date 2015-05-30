@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<mavlink>
+  <version>1</version>
+  <messages>
+    <message id="150" name="PFD">
+      <description>This message encodes data needed for the GroundStation Primary Flight Display. Should be sent at 20Hz.</description>
+      <field type="int16_t" name="roll">Roll angle in 0.01 degrees. Positive means rolling CW (right down). </field>
+      <field type="int16_t" name="pitch">Pitch angle in 0.01 degrees. Positive means pitching up. </field>
+      <field type="int16_t" name="yaw">Yaw angle (magnetic heading) in 0.01 degrees. Positive means yawing CW (turn to the right). </field>
+      <field type="int16_t" name="altitude">altitude (AGL) in meters. </field>
+      <field type="int16_t" name="airspeed">airspeed in 0.1 m/s. </field>
+      <field type="int16_t" name="battI">Battery current in 0.01 A. </field>
+    </message>
+
+    <message id="151" name="NavD">
+      <description>This message encodes data needed for the GroundStation Navigation Display. Should be sent at 5Hz. </description>
+      <field type="int16_t" name="battV">Battery voltage in 0.01 Volt. </field>
+      <field type="int16_t" name="temp">Cabin Temperature in 0.1 Celcius. </field>
+      <field type="int32_t" name="latitude">Latitude (WGS84), in 10^-7 degrees. </field>
+      <field type="int32_t" name="longitude">Longitude (WGS84), in 10^-7 degrees. </field>
+      <field type="uint16_t" name="course">Course heading in 0.01 degrees. </field>
+      <field type="uint16_t" name="groundspeed">groundspeed in 0.01 m/s. </field>
+    </message>
+
+    <message id="152" name="SystemID">
+      <description>This message encodes part of the data needed for System Identification. </description>
+      <field type="int16_t" name="u_a">Aileron control input in raw PWM value. Positive means right wing down. </field>
+      <field type="int16_t" name="u_e">Elevator control input in raw PWM value. Positive means pitching up. </field>
+      <field type="int16_t" name="u_r">Rudder control input in raw PWM value. Positive means turning to the right. </field>
+      <field type="int16_t" name="ax">Acceleration on the body x-axis in 0.01g. Positive front. </field>
+      <field type="int16_t" name="ay">Acceleration on the body y-axis in 0.01g. Positive right. </field>
+      <field type="int16_t" name="az">Acceleration on the body z-axis in 0.01g. Positive down. </field>
+      <field type="int16_t" name="p">Roll rate in 0.1 deg/s. Same sign-convention as roll angle. </field>
+      <field type="int16_t" name="q">Pitch rate in 0.1 deg/s. Same sign-convention as pitch angle. </field>
+      <field type="int16_t" name="r">Yaw rate in 0.1 deg/s. Same sign-convention as yaw angle. </field>
+    </message>
+    
+  </messages>
+</mavlink>

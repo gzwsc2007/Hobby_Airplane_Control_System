@@ -118,6 +118,17 @@ static int nrf24_recv(uint8_t *rbuf, uint8_t *plen) {
   return HACS_NO_ERROR;
 }
 
+int nrf24_early_init(void) {
+  // Create a binary semaphore for send synchronization
+  send_sema4 = xSemaphoreCreateBinary();
+
+  // Create a binary semaphore for irq handling
+  irq_sema4 = xSemaphoreCreateBinary();
+
+  // Create a queue for receiving messages over the air
+  msg_queue = xQueueCreate(NRF24_MSG_QUEUE_LENGTH, sizeof(nrf24_msg_t));
+}
+
 static int nrf24_init(void) {
   // GPIO init
   gpio_init_pin(NRF24_CE_PORT, NRF24_CE_PIN, HACS_GPIO_MODE_OUTPUT_PP,
@@ -134,15 +145,6 @@ static int nrf24_init(void) {
 
 static int nrf24_radio_config(void) {
   int retval;
-
-  // Create a binary semaphore for send synchronization
-  send_sema4 = xSemaphoreCreateBinary();
-
-  // Create a binary semaphore for irq handling
-  irq_sema4 = xSemaphoreCreateBinary();
-
-  // Create a queue for receiving messages over the air
-  msg_queue = xQueueCreate(NRF24_MSG_QUEUE_LENGTH, sizeof(nrf24_msg_t));
 
   retval = nrf24_soft_reset();
   if (retval != HAL_OK) {

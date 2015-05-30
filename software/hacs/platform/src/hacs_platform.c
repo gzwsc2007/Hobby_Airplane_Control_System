@@ -4,10 +4,12 @@
 #include "hacs_debug_uart.h"
 #include "hacs_spi_master.h"
 #include "hacs_i2c_master.h"
+#include "hacs_uart.h"
 #include "stm32f4xx_hal.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "nrf24l01.h"
 #include "hmc5883.h"
 
 /* Platform static data */
@@ -24,6 +26,10 @@ void hacs_platform_init(void)
   __GPIOB_CLK_ENABLE();
   __GPIOC_CLK_ENABLE();
   __GPIOD_CLK_ENABLE();
+
+  /* Turn on all DMA clocks since we don't care about power */
+  __DMA1_CLK_ENABLE();
+  __DMA2_CLK_ENABLE();
 
 	/* STM32F4xx HAL library initialization:
    - Configure the Flash prefetch, Flash preread and Buffer caches
@@ -51,11 +57,18 @@ void hacs_platform_init(void)
   }
 
 	/* Init USART */
+  if (hacs_uart_init(HACS_UART_GPS, 115200, 
+                     HACS_UART_NOT_USE_TX_DMA, HACS_UART_USE_RX_DMA) != 0) {
+    printf("Error in uart_init!\r\n");
+  }
 
 	// TODO: Move sensor init into the sensor_manager thread
   if (hmc5883_init() != 0) {
     printf("Error in hmc5883_init!\r\n");
   }
+
+  /* Early (pre-scheduler) init for devices */
+  nrf24_early_init();
 }
 
 // Redirect putc to UART send

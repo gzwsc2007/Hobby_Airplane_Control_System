@@ -172,6 +172,8 @@ typedef enum
 #define NRF24_EN_ACK_PAY                                0x02
 #define NRF24_EN_DYN_ACK                                0x01
 
+int nrf24_early_init(void);
+
 void nrf24_driver_task(void *param);
 
 xQueueHandle nrf24_get_msg_queue(void);

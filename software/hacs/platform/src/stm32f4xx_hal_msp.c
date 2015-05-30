@@ -47,6 +47,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+#include "hacs_platform.h"
 #include "hacs_platform_resources.h"
 
 /** @addtogroup STM32F4xx_HAL_Driver
@@ -127,6 +128,58 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 
     /* Enable USART2 clock */
     __USART2_CLK_ENABLE();
+    
+  }  else if (huart->Instance==USART6) {
+    GPIO_InitTypeDef  GPIO_InitStruct;
+      
+    /* Peripheral clock enable */
+    __USART6_CLK_ENABLE();
+    USART6_TX_GPIO_CLK_ENABLE();
+    USART6_RX_GPIO_CLK_ENABLE();
+  
+    /* USART6 GPIO Configuration */
+    GPIO_InitStruct.Pin = USART6_TX_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Alternate = USART6_TX_AF;
+    HAL_GPIO_Init(USART6_TX_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = USART6_RX_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Alternate = USART6_RX_AF;
+    HAL_GPIO_Init(USART6_RX_PORT, &GPIO_InitStruct);
+
+    NVIC_SetPriority(USART6_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY+1);
+    NVIC_EnableIRQ(USART6_IRQn);
+
+  } else if (huart->Instance==USART1) {
+    GPIO_InitTypeDef  GPIO_InitStruct;
+      
+    /* Peripheral clock enable */
+    __USART1_CLK_ENABLE();
+    USART1_TX_GPIO_CLK_ENABLE();
+    USART1_RX_GPIO_CLK_ENABLE();
+  
+    /* USART1 GPIO Configuration */
+    GPIO_InitStruct.Pin = USART1_TX_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Alternate = USART1_TX_AF;
+    HAL_GPIO_Init(USART1_TX_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = USART1_RX_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Alternate = USART1_RX_AF;
+    HAL_GPIO_Init(USART1_RX_PORT, &GPIO_InitStruct);
+
+    NVIC_SetPriority(USART1_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY+1);
+    NVIC_EnableIRQ(USART1_IRQn);
   }
 }
 
@@ -151,7 +204,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *huart)
     /* Configure UART Tx as alternate function  */
     HAL_GPIO_DeInit(USART2_TX_PORT, USART2_TX_PIN);
     /* Configure UART Rx as alternate function  */
-    HAL_GPIO_DeInit(USART2_RX_PORT, USART2_RX_PIN); 
+    HAL_GPIO_DeInit(USART2_RX_PORT, USART2_RX_PIN);  
   }
 }
 

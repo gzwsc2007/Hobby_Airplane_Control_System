@@ -221,6 +221,9 @@
       <name>$PROJ_DIR$\..\..\software\hacs\platform\src\hacs_spi_master.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\platform\src\hacs_uart.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\software\third_party\CMSIS\Device\ST\STM32F4xx\Source\Templates\iar\startup_stm32f411xe.s</name>
     </file>
     <file>

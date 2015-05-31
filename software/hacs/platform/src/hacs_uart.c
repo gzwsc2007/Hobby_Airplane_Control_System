@@ -7,8 +7,13 @@
 
 static UART_HandleTypeDef uart_handles[HACS_NUM_UART_PERIPH];
 static DMA_HandleTypeDef uart_rx_dma_handles[HACS_NUM_UART_PERIPH];
-static hacs_uart_rx_cb_t uart_rx_cb[HACS_NUM_UART_PERIPH];
+
+static hacs_uart_rx_cb_t uart_rx_ht_cb[HACS_NUM_UART_PERIPH];
+static hacs_uart_rx_cb_t uart_rx_tc_cb[HACS_NUM_UART_PERIPH];
 static uint32_t uart_rx_size[HACS_NUM_UART_PERIPH];
+
+static void rx_dma_ht(DMA_HandleTypeDef *hdma);
+static void rx_dma_tc(DMA_HandleTypeDef *hdma);
 
 int hacs_uart_init(hacs_uart_t bus, uint32_t baud, uint8_t use_tx_dma, uint8_t use_rx_dma) {
   UART_HandleTypeDef *p_handle = &uart_handles[bus];
@@ -25,6 +30,7 @@ int hacs_uart_init(hacs_uart_t bus, uint32_t baud, uint8_t use_tx_dma, uint8_t u
   // Initialize DMA
   if (use_rx_dma) {
     DMA_HandleTypeDef *hdma = &uart_rx_dma_handles[bus];
+
     hdma->Instance = hacs_uart_rx_dma_stream[bus];
     hdma->Init.Channel = hacs_uart_rx_dma_chan[bus];
     hdma->Init.Direction = DMA_PERIPH_TO_MEMORY;
@@ -32,9 +38,20 @@ int hacs_uart_init(hacs_uart_t bus, uint32_t baud, uint8_t use_tx_dma, uint8_t u
     hdma->Init.MemInc = DMA_MINC_ENABLE;
     hdma->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
     hdma->Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    hdma->Init.Mode = DMA_NORMAL;
+    hdma->Init.Mode = DMA_CIRCULAR;
     hdma->Init.Priority = DMA_PRIORITY_MEDIUM;
     hdma->Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+
+    // set up callbacks
+    hdma->XferCpltCallback = rx_dma_tc;
+    hdma->XferHalfCpltCallback = rx_dma_ht;
+
+    // remember which bus this DMA stream belongs to
+    hdma->Parent = (void *)bus;
+
+    NVIC_SetPriority(hacs_uart_rx_dma_irq[bus], 
+                     configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY);
+
     retval = HAL_DMA_Init(hdma);
   }
   // TODO: currently does not support TX DMA
@@ -47,30 +64,39 @@ int hacs_uart_init(hacs_uart_t bus, uint32_t baud, uint8_t use_tx_dma, uint8_t u
 }
 
 int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size, 
-                              hacs_uart_rx_cb_t cb) {
+                              hacs_uart_rx_cb_t ht_cb,
+                              hacs_uart_rx_cb_t tc_cb) {
   int retval;
+  UART_HandleTypeDef *huart = &uart_handles[bus];
 
-  uart_rx_cb[bus] = cb;
+  uart_rx_ht_cb[bus] = ht_cb;
+  uart_rx_tc_cb[bus] = tc_cb;
   uart_rx_size[bus] = size;
 
   // Configure the RX DMA
-  retval = HAL_DMA_Start(&uart_rx_dma_handles[bus], 
-                         (uint32_t)&hacs_uart_instances[bus]->DR, 
-                         buf, size);
+  retval = HAL_DMA_Start_IT(&uart_rx_dma_handles[bus], 
+                            (uint32_t)&huart->Instance->DR, 
+                            buf, size);
 
-  // Use the IDLE interrupt to synchronize RX
-  __HAL_UART_ENABLE_IT(&uart_handles[bus], UART_IT_IDLE);
+  NVIC_EnableIRQ(hacs_uart_rx_dma_irq[bus]);
+
+  // Configure DMA on USART side
+  __HAL_UART_CLEAR_OREFLAG(huart); // clear overrun flag
+  huart->Instance->CR3 |= USART_CR3_DMAR;
 
   return retval;
 }
 
 int hacs_uart_stop_listening(hacs_uart_t bus) {
   DMA_HandleTypeDef *hdma = &uart_rx_dma_handles[bus];
+  USART_TypeDef *uart_inst = hacs_uart_instances[bus];
 
-  __HAL_DMA_DISABLE(hdma);
-  __HAL_UART_DISABLE_IT(&uart_handles[bus], UART_IT_IDLE);
 
-  return 0;
+  uart_inst->CR3 &= ~(USART_CR3_DMAR);
+
+  NVIC_DisableIRQ(hacs_uart_rx_dma_irq[bus]);
+
+  return HAL_DMA_Abort(hdma);
 }
 
 int hacs_uart_blocking_transmit(hacs_uart_t bus, uint8_t *wbuf, size_t wsize) {
@@ -81,31 +107,28 @@ int hacs_uart_blocking_receive(hacs_uart_t bus, uint8_t *rbuf, size_t rsize) {
   return -1;
 }
 
-static void uart_irq_handler(hacs_uart_t bus) {
-  UART_HandleTypeDef *huart = &uart_handles[bus];
+static void rx_dma_ht(DMA_HandleTypeDef *hdma) {
+  // Figure out the bus number
+  hacs_uart_t bus = (hacs_uart_t)hdma->Parent;
 
-  if (__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE)) {
-    __HAL_UART_CLEAR_IDLEFLAG(huart);
-
-    // Disable DMA
-    DMA_HandleTypeDef *hdma = &uart_rx_dma_handles[bus];
-    __HAL_DMA_DISABLE(hdma);
-    huart->Instance->CR3 &= ~(USART_CR3_DMAR); // disable DMA on UART side
-
-    // Invoke callback, providing the actual length read
-    uart_rx_cb[bus](uart_rx_size[bus] - __HAL_DMA_GET_COUNTER(hdma));
-
-    // Enable DMA again
-    __HAL_DMA_SET_COUNTER(hdma, uart_rx_size[bus]);
-    __HAL_DMA_ENABLE(hdma);
-    huart->Instance->CR3 |= USART_CR3_DMAR; // enable DMA on UART side
-  }
+  // Invoke callback, providing the actual length read
+  uart_rx_ht_cb[bus](uart_rx_size[bus] - __HAL_DMA_GET_COUNTER(hdma));
 }
 
-void USART1_IRQHandler(void) {
-  uart_irq_handler(HACS_UART_GPS);
+static void rx_dma_tc(DMA_HandleTypeDef *hdma) {
+  // Figure out the bus number
+  hacs_uart_t bus = (hacs_uart_t)hdma->Parent;
+
+  // Invoke callback, providing the actual length read
+  uart_rx_tc_cb[bus](uart_rx_size[bus] - __HAL_DMA_GET_COUNTER(hdma));
 }
 
-void USART6_IRQHandler(void) {
-  uart_irq_handler(HACS_UART_MPU6050);
+// NOTE: the bus-to-dma mapping is hard-coded here!!!
+void DMA2_Stream1_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&uart_rx_dma_handles[HACS_UART_MPU6050]);
+}
+
+// NOTE: the bus-to-dma mapping is hard-coded here!!!
+void DMA2_Stream2_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&uart_rx_dma_handles[HACS_UART_GPS]);
 }

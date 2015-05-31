@@ -152,9 +152,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
     GPIO_InitStruct.Alternate = USART6_RX_AF;
     HAL_GPIO_Init(USART6_RX_PORT, &GPIO_InitStruct);
 
-    NVIC_SetPriority(USART6_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY+1);
-    NVIC_EnableIRQ(USART6_IRQn);
-
   } else if (huart->Instance==USART1) {
     GPIO_InitTypeDef  GPIO_InitStruct;
       
@@ -177,9 +174,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
     GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
     GPIO_InitStruct.Alternate = USART1_RX_AF;
     HAL_GPIO_Init(USART1_RX_PORT, &GPIO_InitStruct);
-
-    NVIC_SetPriority(USART1_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY+1);
-    NVIC_EnableIRQ(USART1_IRQn);
   }
 }
 

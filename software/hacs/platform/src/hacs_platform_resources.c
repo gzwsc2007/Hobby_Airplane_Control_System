@@ -38,3 +38,8 @@ const uint32_t hacs_uart_rx_dma_chan[HACS_NUM_UART_PERIPH] = {
 	[HACS_UART_MPU6050] = DMA_CHANNEL_5,
 	[HACS_UART_GPS] = DMA_CHANNEL_4,
 };
+
+const IRQn_Type hacs_uart_rx_dma_irq[HACS_NUM_UART_PERIPH] = {
+	[HACS_UART_MPU6050] = DMA2_Stream1_IRQn,
+	[HACS_UART_GPS] = DMA2_Stream2_IRQn,
+};

@@ -32,6 +32,7 @@ typedef enum {
 extern USART_TypeDef* const hacs_uart_instances[HACS_NUM_UART_PERIPH];
 extern DMA_Stream_TypeDef* const hacs_uart_rx_dma_stream[HACS_NUM_UART_PERIPH];
 extern const uint32_t hacs_uart_rx_dma_chan[HACS_NUM_UART_PERIPH];
+extern const IRQn_Type hacs_uart_rx_dma_irq[HACS_NUM_UART_PERIPH];
 
 // hacs_uart_t is defined as an index
 typedef enum {

@@ -13,11 +13,17 @@ static uint8_t radio_test[32] = {
 	'b','e','e','f','\0'
 };
 
-static uint8_t gps_rxne;
+static uint8_t gps_ht;
+static uint8_t gps_tc;
 static uint32_t gps_rx_len;
-static void gps_cb(uint32_t len) {
+
+static void gps_ht_cb(uint32_t len) {
+  gps_ht = 1;
   gps_rx_len = len;
-  gps_rxne = 1;
+}
+
+static void gps_tc_cb(uint32_t len) {
+  gps_tc = 1;
 }
 
 int hacs_console_cmd_dispatch(char *buf)
@@ -45,13 +51,19 @@ int hacs_console_cmd_dispatch(char *buf)
   	nrf24_dump_registers();
   } else if (!strcmp(buf, "gps")) {
     uint8_t buf[128];
-    gps_rxne = 0;
-    hacs_uart_start_listening(HACS_UART_GPS, (uint32_t)buf, 128, gps_cb);
+    gps_ht = 0;
+    hacs_uart_start_listening(HACS_UART_GPS, (uint32_t)buf, 128, gps_ht_cb, gps_tc_cb);
     while(!debug_uart_inpstat()) {
-      while(!gps_rxne);
-      gps_rxne = 0;
-      buf[127] = 0;
-      printf("%s\r\n", buf);
+      while(!gps_ht);
+      gps_ht = 0;
+      gps_tc = 0;
+      for (int i = 0; i < gps_rx_len; i++) {
+        debug_uart_putchar(buf[i]);
+      }
+      while(!gps_tc);
+      for (int i = gps_rx_len; i < 128; i++) {
+        debug_uart_putchar(buf[i]);
+      }
     }
     hacs_uart_stop_listening(HACS_UART_GPS);
   }

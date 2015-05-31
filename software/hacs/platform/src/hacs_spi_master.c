@@ -3,10 +3,12 @@
 #include "hacs_spi_master.h"
 #include "stm32f4xx_hal.h"
 #include "hacs_gpio.h"
+#include "semphr.h"
 
-#define SPI_OP_TIMEOUT_MS   (HAL_MAX_DELAY)
+#define SPI_OP_TIMEOUT_MS   (100)
 
 static SPI_HandleTypeDef spi_handles[HACS_NUM_SPI_PERIPH];
+static xSemaphoreHandle spi_locks[HACS_NUM_I2C_PERIPH];
 
 static uint32_t calc_prescaler_from_freq(hacs_spi_t bus, uint32_t freq)
 {
@@ -43,7 +45,7 @@ int spi_master_init(hacs_spi_t bus, uint32_t freq, uint8_t cpol, uint8_t cpha)
   // Initialize the CS pin
   gpio_init_pin(hacs_spi_cs_port[bus], hacs_spi_cs_pin[bus], HACS_GPIO_MODE_OUTPUT_PP,
                 HACS_GPIO_NO_PULL);
-  spi_master_deassert_cs(bus);
+  gpio_write_low(hacs_spi_cs_port[bus], hacs_spi_cs_pin[bus]);
 
   p_handle->Instance = hacs_spi_instances[bus];
   p_handle->Init.Mode = SPI_MODE_MASTER;
@@ -73,6 +75,9 @@ int spi_master_init(hacs_spi_t bus, uint32_t freq, uint8_t cpol, uint8_t cpha)
   p_handle->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
   p_handle->Init.CRCPolynomial = 7; // don't care
   
+  // Create bus lock
+  spi_locks[bus] = xSemaphoreCreateMutex();
+
   return HAL_SPI_Init(p_handle);
 }
 
@@ -98,9 +103,11 @@ int spi_master_read(hacs_spi_t bus, uint8_t *rbuf, size_t rsize)
 }
 
 void spi_master_assert_cs(hacs_spi_t bus) {
+  xSemaphoreTake(spi_locks[bus], portMAX_DELAY);
   gpio_write_low(hacs_spi_cs_port[bus], hacs_spi_cs_pin[bus]);
 }
 
 void spi_master_deassert_cs(hacs_spi_t bus) {
   gpio_write_high(hacs_spi_cs_port[bus], hacs_spi_cs_pin[bus]);
+  xSemaphoreGive(spi_locks[bus]);
 }

@@ -39,6 +39,7 @@ static int nrf24_recv(uint8_t *rbuf, uint8_t *plen);
 static uint8_t gnd_addr[] = {0x68,0x86,0x66,0x88,0x28};
 static xSemaphoreHandle send_sema4;
 static xSemaphoreHandle irq_sema4;
+static xSemaphoreHandle send_lock;
 static xQueueHandle msg_queue;
 static volatile uint8_t nrf24_status;
 
@@ -127,6 +128,11 @@ int nrf24_early_init(void) {
 
   // Create a queue for receiving messages over the air
   msg_queue = xQueueCreate(NRF24_MSG_QUEUE_LENGTH, sizeof(nrf24_msg_t));
+
+  // Create a lock for the send function
+  send_lock = xSemphoreCreateMutex();
+
+  return 0;
 }
 
 static int nrf24_init(void) {
@@ -221,6 +227,10 @@ static int nrf24_radio_config(void) {
 }
 
 int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd) {
+  // Protect the send process. Only one instance of nrf24_send should be
+  // invoked at one time
+  xSemaphoreTake(send_lock, portMAX_DELAY);
+
   // Always clear the MAX_RT bit in status register
   nrf24_clear_irq(NRF24_MAX_RT);
 
@@ -229,6 +239,8 @@ int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd) {
   
   // Grab the send semaphore to wait for send-complete (500ms timeout)
   xSemaphoreTake(send_sema4, MS_TO_TICKS(500));
+
+  xSemaphoreGive(send_lock);
 
   return nrf24_status;
 /*

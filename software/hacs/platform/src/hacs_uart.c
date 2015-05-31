@@ -5,12 +5,17 @@
 
 #define UART_OP_TIMEOUT_MS   (HAL_MAX_DELAY)
 
+#define BUS_IN_USE  (1)
+#define BUS_IDLE    (0)
+
 static UART_HandleTypeDef uart_handles[HACS_NUM_UART_PERIPH];
 static DMA_HandleTypeDef uart_rx_dma_handles[HACS_NUM_UART_PERIPH];
 
 static hacs_uart_rx_cb_t uart_rx_ht_cb[HACS_NUM_UART_PERIPH];
 static hacs_uart_rx_cb_t uart_rx_tc_cb[HACS_NUM_UART_PERIPH];
 static uint32_t uart_rx_size[HACS_NUM_UART_PERIPH];
+
+static uint8_t uart_locks[HACS_NUM_UART_PERIPH];
 
 static void rx_dma_ht(DMA_HandleTypeDef *hdma);
 static void rx_dma_tc(DMA_HandleTypeDef *hdma);
@@ -60,6 +65,8 @@ int hacs_uart_init(hacs_uart_t bus, uint32_t baud, uint8_t use_tx_dma, uint8_t u
     retval = HAL_UART_Init(p_handle);
   }
 
+  uart_locks[bus] = BUS_IDLE;
+
   return retval;
 }
 
@@ -68,6 +75,12 @@ int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size,
                               hacs_uart_rx_cb_t tc_cb) {
   int retval;
   UART_HandleTypeDef *huart = &uart_handles[bus];
+
+  // check if the bus is already in use
+  if (uart_locks[bus] == BUS_IN_USE) {
+    return HACS_ERR_BUS_ALREADY_IN_USE;
+  }
+  uart_locks[bus] = BUS_IN_USE;
 
   uart_rx_ht_cb[bus] = ht_cb;
   uart_rx_tc_cb[bus] = tc_cb;
@@ -91,6 +104,7 @@ int hacs_uart_stop_listening(hacs_uart_t bus) {
   DMA_HandleTypeDef *hdma = &uart_rx_dma_handles[bus];
   USART_TypeDef *uart_inst = hacs_uart_instances[bus];
 
+  uart_locks[bus] = BUS_IDLE;
 
   uart_inst->CR3 &= ~(USART_CR3_DMAR);
 

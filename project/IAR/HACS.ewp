@@ -1919,6 +1919,9 @@
   <group>
     <name>device</name>
     <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\device\src\gps_serial.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\software\hacs\device\src\hmc5883.c</name>
     </file>
     <file>

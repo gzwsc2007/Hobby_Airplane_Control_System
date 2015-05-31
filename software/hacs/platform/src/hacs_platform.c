@@ -11,6 +11,7 @@
 
 #include "nrf24l01.h"
 #include "hmc5883.h"
+#include "gps_serial.h"
 
 /* Platform static data */
 uint8_t hacs_critical_ref_count = 0; // Critical section reference count
@@ -69,6 +70,7 @@ void hacs_platform_init(void)
 
   /* Early (pre-scheduler) init for devices */
   nrf24_early_init();
+  gps_early_init();
 }
 
 // Redirect putc to UART send

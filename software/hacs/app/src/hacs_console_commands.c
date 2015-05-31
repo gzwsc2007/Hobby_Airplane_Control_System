@@ -5,9 +5,11 @@
 #include "hacs_spi_master.h"
 #include "hacs_uart.h"
 #include "hacs_debug_uart.h"
+#include "queue.h"
 
 #include "hmc5883.h"
 #include "nrf24l01.h"
+#include "gps_serial.h"
 
 static uint8_t radio_test[32] = {
 	'b','e','e','f','\0'
@@ -49,7 +51,7 @@ int hacs_console_cmd_dispatch(char *buf)
   	retval = nrf24_send(radio_test,sizeof(radio_test),NRF24_ACK);
   } else if (!strcmp(buf, "rdump")) {
   	nrf24_dump_registers();
-  } else if (!strcmp(buf, "gps")) {
+  } else if (!strcmp(buf, "gps raw")) {
     uint8_t buf[128];
     gps_ht = 0;
     hacs_uart_start_listening(HACS_UART_GPS, (uint32_t)buf, 128, gps_ht_cb, gps_tc_cb);
@@ -66,6 +68,17 @@ int hacs_console_cmd_dispatch(char *buf)
       }
     }
     hacs_uart_stop_listening(HACS_UART_GPS);
+  } else if (!strcmp(buf, "gps+")) {
+    gps_data_t temp;
+    xQueueHandle q = gps_get_msg_queue();
+
+    gps_start_parsing();
+    while(!debug_uart_inpstat()) {
+      xQueueReceive(q, &temp, portMAX_DELAY);
+      printf("lat: %d long: %d speed: %d course: %d\r\n",
+             temp.latitude,temp.longitude,temp.speed,temp.course);
+    }
+    gps_stop_parsing();
   }
 
   return retval;

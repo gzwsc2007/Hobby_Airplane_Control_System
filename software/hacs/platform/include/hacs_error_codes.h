@@ -10,6 +10,8 @@ typedef enum {
 
 	HACS_EXTI_OVERWRITE_WARN = -20,
 
+	HACS_GPS_FORMOT_NOT_SUPPORTED = -30,
+
 } hacs_error_t;
 
 #endif

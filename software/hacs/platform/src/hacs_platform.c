@@ -12,6 +12,7 @@
 #include "nrf24l01.h"
 #include "hmc5883.h"
 #include "gps_serial.h"
+#include "mpu6050_serial.h"
 
 /* Platform static data */
 uint8_t hacs_critical_ref_count = 0; // Critical section reference count
@@ -60,7 +61,11 @@ void hacs_platform_init(void)
 	/* Init USART */
   if (hacs_uart_init(HACS_UART_GPS, 115200, 
                      HACS_UART_NOT_USE_TX_DMA, HACS_UART_USE_RX_DMA) != 0) {
-    printf("Error in uart_init!\r\n");
+    printf("Error in GPS uart_init!\r\n");
+  }
+  if (hacs_uart_init(HACS_UART_MPU6050, 115200, 
+                     HACS_UART_NOT_USE_TX_DMA, HACS_UART_USE_RX_DMA) != 0) {
+    printf("Error in MPU6050 uart_init!\r\n");
   }
 
 	// TODO: Move sensor init into the sensor_manager thread
@@ -71,6 +76,7 @@ void hacs_platform_init(void)
   /* Early (pre-scheduler) init for devices */
   nrf24_early_init();
   gps_early_init();
+  mpu6050_early_init();
 }
 
 // Redirect putc to UART send

@@ -17,7 +17,7 @@ static uint32_t parse_buf_ptr;
 static void gps_ht_cb(uint32_t len_read);
 static void gps_tc_cb(uint32_t len_read);
 static void gps_parser_fsm(uint8_t *pdata, uint32_t len);
-static void gps_parse_string(char *s, gps_data_t *g);
+static int gps_parse_string(char *s, gps_data_t *g);
 static void parse_GPRMC_block(char* b, int8_t i, gps_data_t* g);
 /* Helper functions borrowed from: 
     https://github.com/offchooffcho/STM32-1/blob/master/GPSTracker/car/nmea.c
@@ -66,20 +66,19 @@ static void gps_parser_fsm(uint8_t *pdata, uint32_t len) {
 
     if (c == '\r' || c == '\n') {
       gps_data_t temp_data;
-      portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
       // Got a complete message. Parse the local buffer
       parse_buf[parse_buf_ptr] = '\0';
-      gps_parse_string((char*)parse_buf, &temp_data);
-
-      xQueueSendFromISR(gps_msg_queue, &temp_data, &xHigherPriorityTaskWoken);
+      if (gps_parse_string((char*)parse_buf, &temp_data) == HACS_NO_ERROR) {
+        portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+        xQueueSendFromISR(gps_msg_queue, &temp_data, &xHigherPriorityTaskWoken);
+        if( xHigherPriorityTaskWoken ) {
+          portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+        }
+      }
 
       // Reset local buffer pointer. Ready for next message
       parse_buf_ptr = 0;
-
-      if( xHigherPriorityTaskWoken ) {
-          portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-      }
 
     } else {
       assert(parse_buf_ptr < GPS_PARSE_BUF_LEN);
@@ -97,14 +96,14 @@ static void gps_parser_fsm(uint8_t *pdata, uint32_t len) {
  * 
  * Supports GPRMC for now.
  */
-static void gps_parse_string(char *s, gps_data_t *g) {
+static int gps_parse_string(char *s, gps_data_t *g) {
   // a block for interpretation
   char *block;
   int8_t index = 1;  // block index
   
   // determine the format of the string (can be used to extend to other format)
   if (strncmp(s, "$GPRMC", 6)) {
-    return;
+    return HACS_GPS_FORMOT_NOT_SUPPORTED;
   }
   
   s += 7;
@@ -122,6 +121,8 @@ static void gps_parse_string(char *s, gps_data_t *g) {
     }
     s++;
   }
+
+  return 0;
 }
 
 /* Helper function to parse GPRMC string */

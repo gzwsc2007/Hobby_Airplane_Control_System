@@ -1925,6 +1925,9 @@
       <name>$PROJ_DIR$\..\..\software\hacs\device\src\hmc5883.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\device\src\mpu6050_serial.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\software\hacs\device\src\nrf24l01.c</name>
     </file>
   </group>

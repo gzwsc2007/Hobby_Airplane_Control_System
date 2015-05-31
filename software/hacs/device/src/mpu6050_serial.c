@@ -8,16 +8,16 @@
 
 static xQueueHandle mpu_msg_queue;
 static uint8_t raw_buf[MPU_RAW_BUF_LEN];
-static uint32_t last_read_len;
+static volatile uint32_t last_read_len;
 
 static uint8_t parse_buf[MPU_PARSE_BUF_LEN];
-static uint32_t parse_buf_ptr;
+static volatile uint32_t parse_buf_ptr;
 
 typedef enum {
   PARSER_STATE_IDLE = 0,
   PARSER_STATE_COPY_TO_LOCAL,
 } parser_state_t;
-static parser_state_t state;
+static volatile parser_state_t state;
 
 static void mpu_ht_cb(uint32_t len_read);
 static void mpu_tc_cb(uint32_t len_read);
@@ -58,8 +58,8 @@ static void mpu_tc_cb(uint32_t len_read) {
 }
 
 static void mpu_parser_fsm(uint8_t *pdata, uint32_t len) {
-  static uint8_t seen_header = 0;
-  static uint8_t bytes_to_copy;
+  static volatile uint8_t seen_header = 0;
+  static volatile uint8_t bytes_to_copy;
   uint8_t c;
 
   while(len > 0) {

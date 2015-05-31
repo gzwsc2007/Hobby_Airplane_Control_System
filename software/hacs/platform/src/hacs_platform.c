@@ -13,6 +13,7 @@
 #include "hmc5883.h"
 #include "gps_serial.h"
 #include "mpu6050_serial.h"
+#include "bmp085.h"
 
 /* Platform static data */
 uint8_t hacs_critical_ref_count = 0; // Critical section reference count
@@ -77,6 +78,7 @@ void hacs_platform_init(void)
   nrf24_early_init();
   gps_early_init();
   mpu6050_early_init();
+  bmp085_early_init();
 }
 
 // Redirect putc to UART send

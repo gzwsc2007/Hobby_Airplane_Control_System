@@ -13,6 +13,8 @@ static inline void __disable_irq(void) { asm("cpsid"); }
 static inline void __enable_irq(void) { asm("cpsie"); }
 #endif
 
+#define HACS_REQUIRES(__condition__, __label__) do { if (!(__condition__)) goto __label__; } while(0)
+
 extern uint8_t hacs_critical_ref_count;
 
 void hacs_platform_init(void);

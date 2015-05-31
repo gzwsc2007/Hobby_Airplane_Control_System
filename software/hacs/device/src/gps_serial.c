@@ -9,10 +9,10 @@
 
 static xQueueHandle gps_msg_queue;
 static uint8_t raw_buf[GPS_RAW_BUF_LEN];
-static uint32_t last_read_len;
+static volatile uint32_t last_read_len;
 
 static uint8_t parse_buf[GPS_PARSE_BUF_LEN];
-static uint32_t parse_buf_ptr;
+static volatile uint32_t parse_buf_ptr;
 
 static void gps_ht_cb(uint32_t len_read);
 static void gps_tc_cb(uint32_t len_read);

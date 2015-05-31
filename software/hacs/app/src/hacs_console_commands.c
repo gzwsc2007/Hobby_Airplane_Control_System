@@ -11,6 +11,7 @@
 #include "nrf24l01.h"
 #include "gps_serial.h"
 #include "mpu6050_serial.h"
+#include "bmp085.h"
 
 static uint8_t radio_test[32] = {
 	'b','e','e','f','\0'
@@ -40,6 +41,13 @@ static void mpu_ht_cb(uint32_t len) {
 
 static void mpu_tc_cb(uint32_t len) {
   mpu_tc = 1;
+}
+
+static int bmp_retval;
+static uint8_t bmp_done;
+static void bmp_cb(int ret) {
+  bmp_retval = ret;
+  bmp_done = 1;
 }
 
 int hacs_console_cmd_dispatch(char *buf)
@@ -128,6 +136,18 @@ int hacs_console_cmd_dispatch(char *buf)
     }
     mpu6050_stop_parsing();
 
+  } else if (!strcmp(buf, "bmp")) {
+    int16_t temperature;
+    float altitude;
+
+    bmp_done = 0;
+    bmp085_request_sample(&altitude, &temperature, bmp_cb);
+    while (!bmp_done) vTaskDelay(MS_TO_TICKS(5));
+    if (bmp_retval == HACS_NO_ERROR) {
+      printf("Temperature: %d (0.1 C)\t Altitude: %d (0.1 m)\r\n", temperature, (int)(altitude*10.0));
+    } else {
+      printf("Error: %d\r\n", bmp_retval);
+    }
   }
 
   return retval;

@@ -7,6 +7,9 @@
 #include "hacs_gpio.h"
 #include "nrf24l01.h"
 
+#define NRF24_DRIVER_STACK_SIZE   (128)
+#define NRF24_DRIVER_PRIORITY     (6)
+
 #define NRF24_CSN_LOW() spi_master_assert_cs(HACS_SPI_NRF24)
 #define NRF24_CSN_HIGH() spi_master_deassert_cs(HACS_SPI_NRF24)
 #define NRF24_CE_LOW() gpio_write_low(NRF24_CE_PORT, NRF24_CE_PIN)
@@ -89,6 +92,7 @@ static void nrf24_irq_handler(void) {
   static portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
   /* Wake up the driver thread to handle this IRQ */
+  // TODO: Consider using Direct Task Notification in the future
   xSemaphoreGiveFromISR(irq_sema4,&xHigherPriorityTaskWoken);
 
   /* If xHigherPriorityTaskWoken is now set to pdTRUE then a context switch
@@ -130,7 +134,11 @@ int nrf24_early_init(void) {
   msg_queue = xQueueCreate(NRF24_MSG_QUEUE_LENGTH, sizeof(nrf24_msg_t));
 
   // Create a lock for the send function
-  send_lock = xSemphoreCreateMutex();
+  send_lock = xSemaphoreCreateMutex();
+
+  // Create the driver task
+  xTaskCreate(nrf24_driver_task, "nrf24_driver", NRF24_DRIVER_STACK_SIZE,
+              NULL, NRF24_DRIVER_PRIORITY, NULL);
 
   return 0;
 }

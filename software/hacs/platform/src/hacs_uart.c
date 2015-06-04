@@ -74,17 +74,23 @@ int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size,
                               hacs_uart_rx_cb_t ht_cb,
                               hacs_uart_rx_cb_t tc_cb) {
   int retval;
+  DMA_HandleTypeDef *hdma = &uart_rx_dma_handles[bus];
   UART_HandleTypeDef *huart = &uart_handles[bus];
 
   // check if the bus is already in use
   if (uart_locks[bus] == BUS_IN_USE) {
-    return HACS_ERR_BUS_ALREADY_IN_USE;
+    return HACS_ERR_ALREADY_IN_USE;
   }
   uart_locks[bus] = BUS_IN_USE;
 
   uart_rx_ht_cb[bus] = ht_cb;
   uart_rx_tc_cb[bus] = tc_cb;
   uart_rx_size[bus] = size;
+
+  // Must clear interrupt because HAL does not do it for me
+  __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_TC_FLAG_INDEX(hdma));
+  __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+  __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
 
   // Configure the RX DMA
   retval = HAL_DMA_Start_IT(&uart_rx_dma_handles[bus], 
@@ -102,11 +108,11 @@ int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size,
 
 int hacs_uart_stop_listening(hacs_uart_t bus) {
   DMA_HandleTypeDef *hdma = &uart_rx_dma_handles[bus];
-  USART_TypeDef *uart_inst = hacs_uart_instances[bus];
+  UART_HandleTypeDef *huart = &uart_handles[bus];
 
   uart_locks[bus] = BUS_IDLE;
 
-  uart_inst->CR3 &= ~(USART_CR3_DMAR);
+  huart->Instance->CR3 &= ~(USART_CR3_DMAR);
 
   NVIC_DisableIRQ(hacs_uart_rx_dma_irq[bus]);
 

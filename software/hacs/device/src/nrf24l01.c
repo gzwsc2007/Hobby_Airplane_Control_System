@@ -250,14 +250,11 @@ int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd) {
 
   xSemaphoreGive(send_lock);
 
-  return nrf24_status;
-/*
   if (nrf24_status & NRF24_TX_DS) {
     return HACS_NO_ERROR;
   } else {
     return HACS_NRF24_TX_FAILED;
   }
-  */
 }
 
 /*

@@ -182,6 +182,12 @@
       <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_console_commands.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_sensor_manager.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_system_config.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_telemetry.c</name>
     </file>
   </group>

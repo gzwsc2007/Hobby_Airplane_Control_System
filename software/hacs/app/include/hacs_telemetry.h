@@ -9,7 +9,14 @@ typedef enum {
 
 #define HACS_TELEM_TX_QUEUE_LEN  5
 
+int hacs_telemetry_early_init();
+
 void hacs_telemetry_rx_task(void *param);
 void hacs_telemetry_tx_task(void *param);
+
+int hacs_telem_send_pfd(float roll, float pitch, float yaw, 
+                        float alt, float airspeed, float batt_I);
+int hacs_telem_send_navd(int32_t latitude, int32_t longitude, uint16_t speed,
+                         uint16_t course, int16_t temperature, float batt_V);
 
 #endif

@@ -18,6 +18,8 @@ typedef enum {
   PARSER_STATE_COPY_TO_LOCAL,
 } parser_state_t;
 static volatile parser_state_t state;
+static volatile uint8_t seen_header;
+static volatile uint8_t singleshot;
 
 static void mpu_ht_cb(uint32_t len_read);
 static void mpu_tc_cb(uint32_t len_read);
@@ -34,8 +36,11 @@ xQueueHandle mpu6050_get_msg_queue(void) {
   return mpu_msg_queue;
 }
 
-int mpu6050_start_parsing() {
+int mpu6050_start_parsing(uint8_t is_singleshot) {
   parse_buf_ptr = 0;
+  state = PARSER_STATE_IDLE;
+  seen_header = 0;
+  singleshot = is_singleshot;
   return hacs_uart_start_listening(HACS_UART_MPU6050, (uint32_t)raw_buf, sizeof(raw_buf),
                                    mpu_ht_cb, mpu_tc_cb);
 }
@@ -58,7 +63,6 @@ static void mpu_tc_cb(uint32_t len_read) {
 }
 
 static void mpu_parser_fsm(uint8_t *pdata, uint32_t len) {
-  static volatile uint8_t seen_header = 0;
   static volatile uint8_t bytes_to_copy;
   uint8_t c;
 
@@ -96,6 +100,10 @@ static void mpu_parser_fsm(uint8_t *pdata, uint32_t len) {
         assert(parse_buf_ptr == 33);
         if (mpu_parse_buf(parse_buf, &temp_data) == HACS_NO_ERROR) {
           portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+          if (singleshot) {
+            singleshot = 0;
+            mpu6050_stop_parsing();
+          }
           xQueueSendFromISR(mpu_msg_queue, &temp_data, &xHigherPriorityTaskWoken);
           if( xHigherPriorityTaskWoken ) {
             portYIELD_FROM_ISR( xHigherPriorityTaskWoken );

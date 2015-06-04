@@ -12,7 +12,7 @@ typedef enum {
 
 	HACS_GPS_FORMOT_NOT_SUPPORTED = -30,
 
-	HACS_ERR_BUS_ALREADY_IN_USE = -40,
+	HACS_ERR_ALREADY_IN_USE = -40,
 
 } hacs_error_t;
 

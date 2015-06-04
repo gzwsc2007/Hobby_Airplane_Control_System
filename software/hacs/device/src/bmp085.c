@@ -53,6 +53,7 @@ static void bmp085_driver_task(void *param) {
 
   while (1) {
     // Wait to be notified
+    sample_lock = READY_FOR_SAMPLE;
     xSemaphoreTake(start_sema4, portMAX_DELAY);
 
     retval = bmp085_get_temp_and_press(p_singleshot_temp, &pressure);
@@ -62,8 +63,6 @@ static void bmp085_driver_task(void *param) {
 
 sample_done:
     if (singleshot_done_cb) singleshot_done_cb(retval);
-    // Ready to accept next sampling request
-    sample_lock = READY_FOR_SAMPLE;
   }
 
 error:
@@ -72,7 +71,7 @@ error:
 }
 
 int bmp085_early_init(void) {
-  sample_lock = READY_FOR_SAMPLE;
+  sample_lock = SAMPLE_IN_PROGRESS; // by default start up as busy
   start_sema4 = xSemaphoreCreateBinary();
   xTaskCreate(bmp085_driver_task, "bmp085_driver", BMP085_DRIVER_STACK_SIZE, NULL,
               BMP085_DRIVER_PRIORITY, NULL);
@@ -82,7 +81,7 @@ int bmp085_early_init(void) {
 int bmp085_request_sample(float *p_alt, int16_t *p_temp, bmp085_cb_t done_cb) {
   // Check for locking
   if (sample_lock == SAMPLE_IN_PROGRESS) {
-    return HACS_ERR_BUS_ALREADY_IN_USE;
+    return HACS_ERR_ALREADY_IN_USE;
   }
 
   singleshot_done_cb = done_cb;

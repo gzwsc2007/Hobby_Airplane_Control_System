@@ -12,6 +12,7 @@
 #include "gps_serial.h"
 #include "mpu6050_serial.h"
 #include "bmp085.h"
+#include "hacs_sensor_manager.h"
 
 static uint8_t radio_test[32] = {
 	'b','e','e','f','\0'
@@ -128,7 +129,7 @@ int hacs_console_cmd_dispatch(char *buf)
     mpu_data_t temp;
     xQueueHandle q = mpu6050_get_msg_queue();
 
-    mpu6050_start_parsing();
+    mpu6050_start_parsing(MPU_DRIVER_CONTINUOUS_MODE);
     while(!debug_uart_inpstat()) {
       xQueueReceive(q, &temp, portMAX_DELAY);
       printf("ro: %d pi: %d ya: %d\r\n",
@@ -148,6 +149,10 @@ int hacs_console_cmd_dispatch(char *buf)
     } else {
       printf("Error: %d\r\n", bmp_retval);
     }
+  } else if (!strcmp(buf, "mgr start")) {
+    hacs_sensor_manager_start();
+  } else if (!strcmp(buf, "mgr stop")) {
+    hacs_sensor_manager_stop();
   }
 
   return retval;

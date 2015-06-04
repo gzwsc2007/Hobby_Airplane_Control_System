@@ -159,7 +159,7 @@ void gpio_exti_enable(gpio_port_t port, gpio_pin_t pin,
   } else if (pin_num >= 10 && pin_num <= 15) {
     irq = EXTI15_10_IRQn;
   }
-  NVIC_SetPriority(irq, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY);
+  NVIC_SetPriority(irq, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY+1);
   NVIC_EnableIRQ(irq);
 }
 

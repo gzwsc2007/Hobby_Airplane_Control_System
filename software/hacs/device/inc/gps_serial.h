@@ -4,7 +4,7 @@
 #include "hacs_platform.h"
 #include "queue.h" 
 
-#define GPS_DATA_QUEUE_LENGTH   (5)
+#define GPS_DATA_QUEUE_LENGTH   (2)
 
 /* 
  * Data in this strucct is compatible with the MAVlink protocol

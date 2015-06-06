@@ -7,5 +7,7 @@ hacs_mode_t hacs_get_system_mode(void) {
 }
 
 void hacs_set_system_mode(hacs_mode_t mode) {
-	system_mode = mode;
+	if (mode < HACS_MODE_SENTINEL) {
+		system_mode = mode;
+	}
 }

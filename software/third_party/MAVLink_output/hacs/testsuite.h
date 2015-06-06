@@ -269,11 +269,12 @@ static void mavlink_test_syscmd(uint8_t system_id, uint8_t component_id, mavlink
         uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
         uint16_t i;
 	mavlink_syscmd_t packet_in = {
-		5
+		963497464,17
     };
 	mavlink_syscmd_t packet1, packet2;
         memset(&packet1, 0, sizeof(packet1));
-        	packet1.cmd_flag = packet_in.cmd_flag;
+        	packet1.payload = packet_in.payload;
+        	packet1.cmd = packet_in.cmd;
         
         
 
@@ -283,12 +284,12 @@ static void mavlink_test_syscmd(uint8_t system_id, uint8_t component_id, mavlink
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
         memset(&packet2, 0, sizeof(packet2));
-	mavlink_msg_syscmd_pack(system_id, component_id, &msg , packet1.cmd_flag );
+	mavlink_msg_syscmd_pack(system_id, component_id, &msg , packet1.cmd , packet1.payload );
 	mavlink_msg_syscmd_decode(&msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
         memset(&packet2, 0, sizeof(packet2));
-	mavlink_msg_syscmd_pack_chan(system_id, component_id, MAVLINK_COMM_0, &msg , packet1.cmd_flag );
+	mavlink_msg_syscmd_pack_chan(system_id, component_id, MAVLINK_COMM_0, &msg , packet1.cmd , packet1.payload );
 	mavlink_msg_syscmd_decode(&msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
@@ -301,7 +302,7 @@ static void mavlink_test_syscmd(uint8_t system_id, uint8_t component_id, mavlink
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
         
         memset(&packet2, 0, sizeof(packet2));
-	mavlink_msg_syscmd_send(MAVLINK_COMM_1 , packet1.cmd_flag );
+	mavlink_msg_syscmd_send(MAVLINK_COMM_1 , packet1.cmd , packet1.payload );
 	mavlink_msg_syscmd_decode(last_msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 }

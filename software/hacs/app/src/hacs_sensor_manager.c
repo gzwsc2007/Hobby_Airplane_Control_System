@@ -7,6 +7,7 @@
 #include "mpu6050_serial.h"
 #include "gps_serial.h"
 #include "bmp085.h"
+#include "hmc5883.h"
 #include "hacs_system_config.h"
 #include "hacs_telemetry.h"
 
@@ -28,6 +29,8 @@ void hacs_sensor_manager_task(void *param) {
   portBASE_TYPE gps_data_available;
   portBASE_TYPE bmp085_data_available;
   portTickType xLastWakeTime;
+  hacs_mode_t mode;
+  int16_t magx,magy,magz;
   int retval;
 
   bmp085_done_sema4 = xSemaphoreCreateBinary();
@@ -35,6 +38,14 @@ void hacs_sensor_manager_task(void *param) {
 
   while (1) {
     vTaskDelayUntil(&xLastWakeTime, MS_TO_TICKS(40));
+    mode = hacs_get_system_mode();
+
+    if (mode == HACS_MODE_MAG_CAL) {
+      vTaskDelay(MS_TO_TICKS(60)); // only want this to run at 10Hz
+      hmc5883_update_xyz(&magx, &magy, &magz);
+      hacs_telem_send_magcal(magx,magy,magz);
+      continue;
+    }
 
     // Request a single reading from the MPU
     mpu6050_start_parsing(MPU_DRIVER_SINGLESHOT_MODE);
@@ -82,7 +93,7 @@ void hacs_sensor_manager_task(void *param) {
     }
     
     // TODO: decide what to send (e.g. send SysID packets?) depending on system state
-    if (hacs_get_system_mode() == HACS_MODE_SYSTEM_IDENTIFICATION) {
+    if (mode == HACS_MODE_SYSTEM_IDENTIFICATION) {
 
     }
   }

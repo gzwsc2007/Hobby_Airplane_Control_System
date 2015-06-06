@@ -53,7 +53,8 @@
 
     <message id="155" name="SysCmd">
       <description>This message encodes commands sent by the ground station. </description>
-      <field type="uint8_t" name="cmd_flag">A set of well-knwon command flags </field>
+      <field type="uint8_t" name="cmd">A set of well-knwon commands </field>
+      <field type="uint32_t" name="payload">Optional command payload </field>
     </message>
 
   </messages>

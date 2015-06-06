@@ -4,6 +4,7 @@
 #include "hacs_telemetry.h"
 #include "nrf24l01.h"
 #include "mavlink.h"
+#include "hacs_system_config.h"
 
 #define SYSTEM_ID     (250)
 #define COMPONENT_ID  (125)
@@ -11,18 +12,23 @@
 static xQueueHandle tx_queue;
 static uint8_t pfd_struct_busy;
 static uint8_t navd_struct_busy;
+static uint8_t magcal_struct_busy;
 static mavlink_pfd_t pfd_s;
 static mavlink_navd_t navd_s;
+static mavlink_magcal_t magcal_s;
+static mavlink_syscmd_t syscmd_s;
 
 static mavlink_message_t rx_msg;
 static mavlink_message_t tx_msg;
 static uint8_t tx_buf[MAVLINK_MAX_PACKET_LEN];
 
 static int radio_send_wrapper(uint8_t *data, uint32_t len);
+static int handle_syscmd(mavlink_syscmd_t *syscmd);
 
 int hacs_telemetry_early_init() {
   pfd_struct_busy = 0;
   navd_struct_busy = 0;
+  magcal_struct_busy = 0;
   tx_queue = xQueueCreate(HACS_TELEM_TX_QUEUE_LEN, sizeof(int));
   return HACS_NO_ERROR;
 }
@@ -40,6 +46,9 @@ void hacs_telemetry_rx_task(void *param) {
       if (mavlink_parse_char(MAVLINK_COMM_0, rx.buf[idx], &rx_msg, &status)) {
         // Handle the message
         switch (rx_msg.msgid) {
+          case MAVLINK_MSG_ID_SysCmd:
+            mavlink_msg_syscmd_decode(&rx_msg, &syscmd_s);
+            handle_syscmd(&syscmd_s);
           default: break;
         }
       }
@@ -65,6 +74,11 @@ void hacs_telemetry_tx_task(void *param) {
         assert(navd_struct_busy);
         mavlink_msg_navd_encode(SYSTEM_ID, COMPONENT_ID, &tx_msg, &navd_s);
         navd_struct_busy = 0;
+        break;
+      case TELEM_TX_MAGCAL:
+        assert(magcal_struct_busy);
+        mavlink_msg_magcal_encode(SYSTEM_ID, COMPONENT_ID, &tx_msg, &magcal_s);
+        magcal_struct_busy = 0;
         break;
       default:
         break;
@@ -137,4 +151,37 @@ int hacs_telem_send_navd(int32_t latitude, int32_t longitude, uint16_t speed,
   xQueueSend(tx_queue, &type, portMAX_DELAY);
 
   return HACS_NO_ERROR;
+}
+
+int hacs_telem_send_magcal(int16_t magx, int16_t magy, int16_t magz) {
+  const tx_type_t type = TELEM_TX_MAGCAL;
+
+  if (magcal_struct_busy) {
+    return HACS_ERR_ALREADY_IN_USE;
+  }
+  magcal_struct_busy = 1;
+
+  magcal_s.mx = magx;
+  magcal_s.my = magy;
+  magcal_s.mz = magz;
+
+  xQueueSend(tx_queue, &type, portMAX_DELAY);
+
+  return HACS_NO_ERROR;
+}
+
+static int handle_syscmd(mavlink_syscmd_t *syscmd) {
+  int retval = 0;
+  uint32_t payload = syscmd->payload;
+
+  switch(syscmd->cmd) {
+    case HACS_GND_CMD_SET_MODE:
+      hacs_set_system_mode((hacs_mode_t)payload);
+      break;
+    case HACS_GND_CMD_GET_MODE:
+      break;
+    default: break;
+  }
+
+  return retval;
 }

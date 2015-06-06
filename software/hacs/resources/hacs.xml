@@ -23,17 +23,38 @@
     </message>
 
     <message id="152" name="SystemID">
-      <description>This message encodes part of the data needed for System Identification. </description>
+      <description>This message encodes all the data needed for System Identification. </description>
+      <field type="uint32_t" name="timestamp">Ticks elapsed since the system has started. </field>
       <field type="int16_t" name="u_a">Aileron control input in raw PWM value. Positive means right wing down. </field>
       <field type="int16_t" name="u_e">Elevator control input in raw PWM value. Positive means pitching up. </field>
       <field type="int16_t" name="u_r">Rudder control input in raw PWM value. Positive means turning to the right. </field>
       <field type="int16_t" name="ax">Acceleration on the body x-axis in 0.01g. Positive front. </field>
       <field type="int16_t" name="ay">Acceleration on the body y-axis in 0.01g. Positive right. </field>
       <field type="int16_t" name="az">Acceleration on the body z-axis in 0.01g. Positive down. </field>
+      <field type="int16_t" name="roll">Roll angle in 0.01 degrees. Positive means rolling CW (right down). </field>
+      <field type="int16_t" name="pitch">Pitch angle in 0.01 degrees. Positive means pitching up. </field>
+      <field type="int16_t" name="yaw">Yaw angle (magnetic heading) in 0.01 degrees. Positive means yawing CW (turn to the right). </field>
       <field type="int16_t" name="p">Roll rate in 0.1 deg/s. Same sign-convention as roll angle. </field>
       <field type="int16_t" name="q">Pitch rate in 0.1 deg/s. Same sign-convention as pitch angle. </field>
       <field type="int16_t" name="r">Yaw rate in 0.1 deg/s. Same sign-convention as yaw angle. </field>
     </message>
-    
+
+    <message id="153" name="MagCal">
+      <description>This message encodes raw magnetometer data. </description>
+      <field type="int16_t" name="mx">Magnetometer raw X reading </field>
+      <field type="int16_t" name="my">Magnetometer raw Y reading </field>
+      <field type="int16_t" name="mz">Magnetometer raw Z reading </field>
+    </message>
+
+    <message id="154" name="SysState">
+      <description>This message encodes the current system status. </description>
+      <field type="uint8_t" name="mode"> Current mode of the HACS system </field>
+    </message>
+
+    <message id="155" name="SysCmd">
+      <description>This message encodes commands sent by the ground station. </description>
+      <field type="uint8_t" name="cmd_flag">A set of well-knwon command flags </field>
+    </message>
+
   </messages>
 </mavlink>

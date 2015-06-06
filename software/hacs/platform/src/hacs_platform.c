@@ -38,15 +38,15 @@ void hacs_platform_init(void)
 
 	/* STM32F4xx HAL library initialization:
    - Configure the Flash prefetch, Flash preread and Buffer caches
-   - Systick timer is configured by default as source of time base, but user 
-         can eventually implement his proper time base source (a general purpose 
-         timer for example or other time source), keeping in mind that Time base 
-         duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and 
+   - Systick timer is configured by default as source of time base, but user
+         can eventually implement his proper time base source (a general purpose
+         timer for example or other time source), keeping in mind that Time base
+         duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and
          handled in milliseconds basis.
    - Low Level Initialization
   */
   HAL_Init();
-  
+
   /* Configure the System clock to 100 MHz */
   system_clock_config();
 
@@ -54,7 +54,7 @@ void hacs_platform_init(void)
   debug_uart_init(115200);
 
 	/* Init SPI master */
-  spi_master_init(HACS_SPI_NRF24, 2000000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_0);
+  spi_master_init(HACS_SPI_NRF24, 1000000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_0);
 
 	/* Init I2C master */
   if (i2c_master_init(HACS_I2C, 100000) != 0) {
@@ -62,14 +62,17 @@ void hacs_platform_init(void)
   }
 
 	/* Init USART */
-  if (hacs_uart_init(HACS_UART_GPS, 115200, 
+  if (hacs_uart_init(HACS_UART_GPS, 115200,
                      HACS_UART_NOT_USE_TX_DMA, HACS_UART_USE_RX_DMA) != 0) {
     printf("Error in GPS uart_init!\r\n");
   }
-  if (hacs_uart_init(HACS_UART_MPU6050, 115200, 
+  if (hacs_uart_init(HACS_UART_MPU6050, 115200,
                      HACS_UART_NOT_USE_TX_DMA, HACS_UART_USE_RX_DMA) != 0) {
     printf("Error in MPU6050 uart_init!\r\n");
   }
+
+  // Wait for devices to settle
+  delay_us(1000);
 
 	// TODO: Move sensor init into the sensor_manager thread
   if (hmc5883_init() != 0) {
@@ -97,13 +100,13 @@ void hacs_platform_init(void)
 // Retargets the C library printf function to the USART.
 PUTCHAR_PROTOTYPE
 {
-  debug_uart_putchar(ch); 
+  debug_uart_putchar(ch);
   return ch;
 }
 
 /**
   * @brief  System Clock Configuration
-  *         The system Clock is configured as follow : 
+  *         The system Clock is configured as follow :
   *            System Clock source            = PLL (HSI)
   *            SYSCLK(Hz)                     = 100000000
   *            HCLK(Hz)                       = 100000000
@@ -129,8 +132,8 @@ static void system_clock_config(void)
 	/* Enable Power Control clock */
 	__PWR_CLK_ENABLE();
 
-	/* The voltage scaling allows optimizing the power consumption when the device is 
-	 clocked below the maximum system frequency, to update the voltage scaling value 
+	/* The voltage scaling allows optimizing the power consumption when the device is
+	 clocked below the maximum system frequency, to update the voltage scaling value
 	 regarding system frequency refer to product datasheet.  */
 	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
@@ -148,13 +151,13 @@ static void system_clock_config(void)
 		error_handler();
 	}
 
-	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
+	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
 	 clocks dividers */
 	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
 	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;  
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;  
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 	if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
 		error_handler();
 	}
@@ -169,7 +172,7 @@ static void error_handler(void)
 
 #ifdef  USE_FULL_ASSERT
 void assert_failed(uint8_t* file, uint32_t line)
-{ 
+{
 	/* User can add his own implementation to report the file name and line number,
 	 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 

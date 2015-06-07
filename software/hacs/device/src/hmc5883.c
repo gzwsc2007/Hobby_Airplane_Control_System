@@ -9,11 +9,11 @@ int hmc5883_init() {
 	static uint8_t wbuf2[] = {HMC5883_MR_REG, 0x00}; // continuous measurement mode
 	int retval = 0;
 
-	retval = i2c_master_write(HACS_I2C, HMC5883_ADDR, 
-														wbuf1, sizeof(wbuf1));
+	retval = i2c_master_write(HACS_I2C, HMC5883_ADDR,
+	                          wbuf1, sizeof(wbuf1));
 	if (retval == 0) {
-		retval = i2c_master_write(HACS_I2C, HMC5883_ADDR, 
-															wbuf2, sizeof(wbuf2));
+		retval = i2c_master_write(HACS_I2C, HMC5883_ADDR,
+		                          wbuf2, sizeof(wbuf2));
 	}
 
 	if (retval == 0) {
@@ -28,12 +28,12 @@ int hmc5883_is_ready() {
 	int retval = 0;
 
 	retval = i2c_master_read_mem(HACS_I2C, HMC5883_ADDR, HMC5883_IRA_REG,
-															 id, sizeof(id));
+	                             id, sizeof(id));
 
 	if (id[0] == 72 && id[1] == 52 && id[2] == 51) {
 		return retval;
 	} else {
-		printf("HMC5883: Invalid IDs %d %d %d\n",id[0],id[1],id[2]);
+		printf("HMC5883: Invalid IDs %d %d %d\n", id[0], id[1], id[2]);
 		return -42;
 	}
 }
@@ -45,8 +45,8 @@ int hmc5883_update_xyz(int16_t *px, int16_t *py, int16_t *pz) {
 	int16_t z;
 	int retval = 0;
 
-	retval = i2c_master_read_mem(HACS_I2C, HMC5883_ADDR, HMC5883_DXA_REG, 
-															 buf, sizeof(buf));
+	retval = i2c_master_read_mem(HACS_I2C, HMC5883_ADDR, HMC5883_DXA_REG,
+	                             buf, sizeof(buf));
 
 	x = buf[0];
 	x = x << 8;

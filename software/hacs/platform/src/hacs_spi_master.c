@@ -74,7 +74,7 @@ int spi_master_init(hacs_spi_t bus, uint32_t freq, uint8_t cpol, uint8_t cpha)
   p_handle->Init.TIMode = SPI_TIMODE_DISABLED;
   p_handle->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
   p_handle->Init.CRCPolynomial = 7; // don't care
-  
+
   // Create bus lock
   spi_locks[bus] = xSemaphoreCreateMutex();
 

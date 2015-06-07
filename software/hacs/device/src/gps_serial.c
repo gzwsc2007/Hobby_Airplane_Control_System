@@ -19,7 +19,7 @@ static void gps_tc_cb(uint32_t len_read);
 static void gps_parser_fsm(uint8_t *pdata, uint32_t len);
 static int gps_parse_string(char *s, gps_data_t *g);
 static void parse_GPRMC_block(char* b, int8_t i, gps_data_t* g);
-/* Helper functions borrowed from: 
+/* Helper functions borrowed from:
     https://github.com/offchooffcho/STM32-1/blob/master/GPSTracker/car/nmea.c
  */
 static int32_t NMEA_convertLatLong(char *b);
@@ -54,7 +54,7 @@ static void gps_ht_cb(uint32_t len_read) {
 static void gps_tc_cb(uint32_t len_read) {
   assert(last_read_len < GPS_RAW_BUF_LEN);
 
-  gps_parser_fsm(raw_buf+last_read_len, GPS_RAW_BUF_LEN-last_read_len);
+  gps_parser_fsm(raw_buf + last_read_len, GPS_RAW_BUF_LEN - last_read_len);
 }
 
 static void gps_parser_fsm(uint8_t *pdata, uint32_t len) {
@@ -72,7 +72,7 @@ static void gps_parser_fsm(uint8_t *pdata, uint32_t len) {
       if (gps_parse_string((char*)parse_buf, &temp_data) == HACS_NO_ERROR) {
         portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
         xQueueSendFromISR(gps_msg_queue, &temp_data, &xHigherPriorityTaskWoken);
-        if( xHigherPriorityTaskWoken ) {
+        if ( xHigherPriorityTaskWoken ) {
           portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
         }
       }
@@ -91,21 +91,21 @@ static void gps_parser_fsm(uint8_t *pdata, uint32_t len) {
 }
 
 /*
- * Take an NMEA string, parse it, and store the interpreted information in the 
+ * Take an NMEA string, parse it, and store the interpreted information in the
  * GPS_Data structure.
- * 
+ *
  * Supports GPRMC for now.
  */
 static int gps_parse_string(char *s, gps_data_t *g) {
   // a block for interpretation
   char *block;
   int8_t index = 1;  // block index
-  
+
   // determine the format of the string (can be used to extend to other format)
   if (strncmp(s, "$GPRMC", 6)) {
     return HACS_GPS_FORMOT_NOT_SUPPORTED;
   }
-  
+
   s += 7;
   block = s;
   while (*s != '\0')
@@ -128,45 +128,45 @@ static int gps_parse_string(char *s, gps_data_t *g) {
 /* Helper function to parse GPRMC string */
 static void parse_GPRMC_block(char* b, int8_t i, gps_data_t* g) {
   int32_t temp;
-  
+
   if (*b == '\0') return;
-  
-  switch(i) 
+
+  switch (i)
   {
-    // Navigation Status: A = valid, V = invalid
-    case 2: 
-      if (*b == 'A') g->valid = 1;
-      else g->valid = 0;
-      break;
-    // Latitude
-    case 3:
-      g->latitude = NMEA_convertLatLong(b);
-      break;
-    // N or S Hemisphere
-    case 4:
-      if (*b == 'S') g->latitude = -(g->latitude);  // Use negative sign to denote S
-      break;
-    // Longitude
-    case 5:
-      g->longitude = NMEA_convertLatLong(b);
-      break;
-    // E or W Hemisphere
-    case 6:
-      if (*b == 'W') g->longitude = -(g->longitude);
-      break;
-    // Ground speed
-    case 7:
-      temp = NMEA_atoi(b);
-      g->speed = (uint16_t)(temp * 643 / 12500); // convert 1 knot to 0.01 m/s
-      break;
-    // Course
-    case 8:
-      g->course = (uint16_t)NMEA_atoi(b);
-      break;
+  // Navigation Status: A = valid, V = invalid
+  case 2:
+    if (*b == 'A') g->valid = 1;
+    else g->valid = 0;
+    break;
+  // Latitude
+  case 3:
+    g->latitude = NMEA_convertLatLong(b);
+    break;
+  // N or S Hemisphere
+  case 4:
+    if (*b == 'S') g->latitude = -(g->latitude);  // Use negative sign to denote S
+    break;
+  // Longitude
+  case 5:
+    g->longitude = NMEA_convertLatLong(b);
+    break;
+  // E or W Hemisphere
+  case 6:
+    if (*b == 'W') g->longitude = -(g->longitude);
+    break;
+  // Ground speed
+  case 7:
+    temp = NMEA_atoi(b);
+    g->speed = (uint16_t)(temp * 643 / 12500); // convert 1 knot to 0.01 m/s
+    break;
+  // Course
+  case 8:
+    g->course = (uint16_t)NMEA_atoi(b);
+    break;
   }
 }
 
-/* 
+/*
  * Helper function to convert raw GPRMC lat/long string to an integer
  * with unit 10^-7 degree.
  */
@@ -176,31 +176,31 @@ static int32_t NMEA_convertLatLong(char *b) {
   int minDec;
   int deg;
   int result;
-  
+
   // convert the decimal portion of min
-  minDec = NMEA_atoi(tmp+1);
+  minDec = NMEA_atoi(tmp + 1);
   min = ((double)minDec) / 100000.0;
   *tmp = '\0';
-      
+
   // convert minute into the form of mm.mmmm
   tmp = tmp - 2; // go back to the first 'm'
   min += (double)NMEA_atoi(tmp);
-  
+
   // convert degree into a single integer
   *tmp = '\0'; // safe to modify b in this case
   deg = NMEA_atoi(b);
-  
+
   // scaling
   result = deg * 10000000; // scale 1 deg to 10^-7 deg
   min = (min / 60.0) * 10000000.0; // convert minute to 10^-7 deg
-  
+
   result = result + (int32_t)min;
   return result;
 }
 
 /*
  * Convert strings of the format "ddmm.mmmm" into integer.
- * Borrowed from 
+ * Borrowed from
  * https://github.com/offchooffcho/STM32-1/blob/master/GPSTracker/car/nmea.c
  */
 static int32_t NMEA_atoi(const char *s)
@@ -209,7 +209,7 @@ static int32_t NMEA_atoi(const char *s)
 
   while ((*s >= '0' && *s <= '9') || *s == '.')
   {
-    if (*s == '.') 
+    if (*s == '.')
     {
       s++;
       continue;

@@ -36,8 +36,8 @@ static inline void hacs_exit_critical(void)
 // Only works @ 100MHz CPU clock
 static inline void delay_us(uint32_t us)
 {
-    for (uint32_t i = 0; i < 100 * us; i++) {
-    }
+	for (uint32_t i = 0; i < 100 * us; i++) {
+	}
 }
 
 #endif

@@ -22,8 +22,8 @@ static int nrf24_burst_write(uint8_t cmd, uint8_t *data, uint8_t len);
 static int nrf24_burst_write_reg(uint8_t reg, uint8_t *data, uint8_t len);
 static int nrf24_burst_read(uint8_t reg, uint8_t *rbuf, uint8_t rlen);
 static int nrf24_send_cmd(uint8_t cmd);
-/** Helpers 
-  * Partly ported from Mike McCauley's (mikem@open.com.au) 
+/** Helpers
+  * Partly ported from Mike McCauley's (mikem@open.com.au)
   * NRF24 library for Arduino.
 **/
 static int nrf24_soft_reset(void);
@@ -39,7 +39,7 @@ static int nrf24_radio_config(void);
 static void nrf24_irq_handler(void);
 static int nrf24_recv(uint8_t *rbuf, uint8_t *plen);
 
-static uint8_t gnd_addr[] = {0x68,0x86,0x66,0x88,0x28};
+static uint8_t gnd_addr[] = {0x68, 0x86, 0x66, 0x88, 0x28};
 static xSemaphoreHandle send_sema4;
 static xSemaphoreHandle irq_sema4;
 static xSemaphoreHandle send_lock;
@@ -59,7 +59,7 @@ void nrf24_driver_task(void *param) {
     printf("NRF24 Init Complete!\r\n");
   }
 
-  while(1) {
+  while (1) {
     // Wait for the Radio IRQ to fire
     xSemaphoreTake(irq_sema4, portMAX_DELAY);
 
@@ -67,7 +67,7 @@ void nrf24_driver_task(void *param) {
 
     // Read status register
     nrf24_read_reg(NRF24_REG_07_STATUS, (uint8_t *)&nrf24_status);
-    
+
     // Clear NRF24 IRQ
     delay_us(NRF24_CSN_INACTIVE_HOLD_US);
     nrf24_clear_irq(nrf24_status & (NRF24_RX_DR | NRF24_TX_DS | NRF24_MAX_RT));
@@ -93,7 +93,7 @@ static void nrf24_irq_handler(void) {
 
   /* Wake up the driver thread to handle this IRQ */
   // TODO: Consider using Direct Task Notification in the future
-  xSemaphoreGiveFromISR(irq_sema4,&xHigherPriorityTaskWoken);
+  xSemaphoreGiveFromISR(irq_sema4, &xHigherPriorityTaskWoken);
 
   /* If xHigherPriorityTaskWoken is now set to pdTRUE then a context switch
     should be performed to ensure the interrupt returns directly to the highest
@@ -148,13 +148,13 @@ static int nrf24_init(void) {
   gpio_init_pin(NRF24_CE_PORT, NRF24_CE_PIN, HACS_GPIO_MODE_OUTPUT_PP,
                 HACS_GPIO_NO_PULL);
 
-	// Initialize the RADIO_IRQ pin and enable IRQ
-	gpio_init_pin(NRF24_IRQ_PORT, NRF24_IRQ_PIN, HACS_GPIO_MODE_INPUT,
+  // Initialize the RADIO_IRQ pin and enable IRQ
+  gpio_init_pin(NRF24_IRQ_PORT, NRF24_IRQ_PIN, HACS_GPIO_MODE_INPUT,
                 HACS_GPIO_NO_PULL);
-	gpio_exti_init(NRF24_IRQ_PORT, NRF24_IRQ_PIN, nrf24_irq_handler);
-	gpio_exti_enable(NRF24_IRQ_PORT, NRF24_IRQ_PIN, 0, 1);
+  gpio_exti_init(NRF24_IRQ_PORT, NRF24_IRQ_PIN, nrf24_irq_handler);
+  gpio_exti_enable(NRF24_IRQ_PORT, NRF24_IRQ_PIN, 0, 1);
 
-	return nrf24_radio_config();
+  return nrf24_radio_config();
 }
 
 static int nrf24_radio_config(void) {
@@ -197,21 +197,21 @@ static int nrf24_radio_config(void) {
     return retval;
   }
 
-/* Not needed because we use ACK with payload
-  // Set local address
-  retval = nrf24_set_this_addr(this_addr, sizeof(this_addr));
-  if (retval != HAL_OK) {
-    return retval;
-  }
-*/
+  /* Not needed because we use ACK with payload
+    // Set local address
+    retval = nrf24_set_this_addr(this_addr, sizeof(this_addr));
+    if (retval != HAL_OK) {
+      return retval;
+    }
+  */
 
-/* Not needed because we use DPL
-  // Set static payload length
-  retval = nrf24_set_payload_size(32);
-  if (retval != HAL_OK) {
-    return retval;
-  }
-*/
+  /* Not needed because we use DPL
+    // Set static payload length
+    retval = nrf24_set_payload_size(32);
+    if (retval != HAL_OK) {
+      return retval;
+    }
+  */
 
   // Enable Dynamic Payload Length in the feature register
   retval = nrf24_write_reg(NRF24_REG_1D_FEATURE, NRF24_EN_DPL | NRF24_EN_ACK_PAY);
@@ -244,7 +244,7 @@ int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd) {
 
   // Write the payload
   nrf24_burst_write(ack_cmd, data, len);
-  
+
   // Grab the send semaphore to wait for send-complete (500ms timeout)
   xSemaphoreTake(send_sema4, MS_TO_TICKS(500));
 
@@ -362,10 +362,11 @@ static int nrf24_set_rf(NRF24DataRate dr, NRF24TransmitPower pwr)
 }
 
 int nrf24_dump_registers(void) {
-	const uint8_t registers[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+  const uint8_t registers[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
                                 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
                                 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-                                0x1C, 0x1D };
+                                0x1C, 0x1D
+                              };
   int i;
   int retval = 0;
   uint8_t val;
@@ -386,14 +387,15 @@ int nrf24_dump_registers(void) {
 
 static int nrf24_write_reg(uint8_t reg, uint8_t val)
 {
-  uint8_t cmd[] = { (reg & NRF24_REGISTER_MASK) | NRF24_COMMAND_W_REGISTER, 
-                     val };
+  uint8_t cmd[] = { (reg & NRF24_REGISTER_MASK) | NRF24_COMMAND_W_REGISTER,
+                    val
+                  };
   int retval;
 
   NRF24_CSN_LOW();
 
   retval = spi_master_write(HACS_SPI_NRF24, cmd, sizeof(cmd));
-  
+
   NRF24_CSN_HIGH();
   delay_us(NRF24_CSN_INACTIVE_HOLD_US);
 

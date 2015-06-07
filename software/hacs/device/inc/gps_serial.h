@@ -2,11 +2,11 @@
 #define _GPS_SERIAL_H_
 
 #include "hacs_platform.h"
-#include "queue.h" 
+#include "queue.h"
 
 #define GPS_DATA_QUEUE_LENGTH   (2)
 
-/* 
+/*
  * Data in this strucct is compatible with the MAVlink protocol
  */
 typedef struct {

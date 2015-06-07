@@ -59,14 +59,14 @@ static void mpu_ht_cb(uint32_t len_read) {
 static void mpu_tc_cb(uint32_t len_read) {
   assert(last_read_len < MPU_RAW_BUF_LEN);
 
-  mpu_parser_fsm(raw_buf+last_read_len, MPU_RAW_BUF_LEN-last_read_len);
+  mpu_parser_fsm(raw_buf + last_read_len, MPU_RAW_BUF_LEN - last_read_len);
 }
 
 static void mpu_parser_fsm(uint8_t *pdata, uint32_t len) {
   static volatile uint8_t bytes_to_copy;
   uint8_t c;
 
-  while(len > 0) {
+  while (len > 0) {
     c = *pdata;
 
     // Feed the new byte to the parser state machine
@@ -105,7 +105,7 @@ static void mpu_parser_fsm(uint8_t *pdata, uint32_t len) {
             mpu6050_stop_parsing();
           }
           xQueueSendFromISR(mpu_msg_queue, &temp_data, &xHigherPriorityTaskWoken);
-          if( xHigherPriorityTaskWoken ) {
+          if ( xHigherPriorityTaskWoken ) {
             portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
           }
         }
@@ -121,7 +121,7 @@ static void mpu_parser_fsm(uint8_t *pdata, uint32_t len) {
 
 static int mpu_parse_buf(uint8_t *buf, mpu_data_t *m) {
   uint8_t ptr = 0;
-  
+
   if (mpu_validate_checksum(buf)) {
     return -1;
   }
@@ -131,11 +131,11 @@ static int mpu_parse_buf(uint8_t *buf, mpu_data_t *m) {
   {
     // accel packet
     if (buf[ptr++] == 0x51) {
-      m->ax = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/32768.0*16.0;
+      m->ax = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 16.0;
       ptr += 2;
-      m->ay = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/32768.0*16.0;
+      m->ay = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 16.0;
       ptr += 2;
-      m->az = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/32768.0*16.0;
+      m->az = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 16.0;
       ptr += 5; // ignore temperature
     } else {
       return -1;
@@ -146,37 +146,37 @@ static int mpu_parse_buf(uint8_t *buf, mpu_data_t *m) {
 
     // angular vel packet
     if (buf[ptr++] == 0x52) {
-      m->rollspeed = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/32768.0*2000.0;
+      m->rollspeed = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 2000.0;
       ptr += 2;
-      m->pitchspeed = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/32768.0*2000.0;
+      m->pitchspeed = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 2000.0;
       ptr += 2;
-      m->yawspeed = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/32768.0*2000.0;
+      m->yawspeed = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 2000.0;
       ptr += 5; // ignore temperature
     } else {
       return -1;
     }
-    
+
     if (buf[ptr++] != 0x55)
       return -1;
-    
+
     // angle packet
     if (buf[ptr++] == 0x53) {
-      m->roll = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/32768.0*180;
+      m->roll = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 180;
       ptr += 2;
-      m->pitch = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/32768.0*180;
+      m->pitch = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 180;
       ptr += 2;
-      m->yaw = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/32768.0*180;
+      m->yaw = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 180;
       ptr += 2;
-      m->temperature = ((int16_t)(buf[ptr+1]<<8| buf[ptr]))/340.0+36.25;
+      m->temperature = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 340.0 + 36.25;
       ptr += 3;
     } else {
       return -1;
     }
 
-  } else { 
+  } else {
     return -1;
   }
-  
+
   return 0;
 }
 

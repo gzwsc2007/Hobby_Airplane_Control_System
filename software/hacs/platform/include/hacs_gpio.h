@@ -22,7 +22,7 @@ typedef enum {
   HACS_GPIO_NO_PULL,
 } gpio_pupd_t;
 
-void gpio_init_pin(gpio_port_t port, gpio_pin_t pin, 
+void gpio_init_pin(gpio_port_t port, gpio_pin_t pin,
                    gpio_mode_t mode, gpio_pupd_t pupd);
 
 void gpio_write_high(gpio_port_t port, gpio_pin_t pin);
@@ -39,9 +39,9 @@ typedef void (*hacs_exti_cb_t)(void);
 
 // NOTE: make sure the pin has been configured properly using
 // gpio_init_pin (e.g. set to input mode) before calling this function
-int gpio_exti_init(gpio_port_t port, gpio_pin_t pin, 
+int gpio_exti_init(gpio_port_t port, gpio_pin_t pin,
                    hacs_exti_cb_t cb);
-void gpio_exti_enable(gpio_port_t port, gpio_pin_t pin, 
+void gpio_exti_enable(gpio_port_t port, gpio_pin_t pin,
                       uint8_t rise, uint8_t fall);
 void gpio_exti_disable(gpio_port_t port, gpio_pin_t pin);
 

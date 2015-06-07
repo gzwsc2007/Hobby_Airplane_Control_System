@@ -54,7 +54,7 @@ int hacs_uart_init(hacs_uart_t bus, uint32_t baud, uint8_t use_tx_dma, uint8_t u
     // remember which bus this DMA stream belongs to
     hdma->Parent = (void *)bus;
 
-    NVIC_SetPriority(hacs_uart_rx_dma_irq[bus], 
+    NVIC_SetPriority(hacs_uart_rx_dma_irq[bus],
                      configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY);
 
     retval = HAL_DMA_Init(hdma);
@@ -70,7 +70,7 @@ int hacs_uart_init(hacs_uart_t bus, uint32_t baud, uint8_t use_tx_dma, uint8_t u
   return retval;
 }
 
-int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size, 
+int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size,
                               hacs_uart_rx_cb_t ht_cb,
                               hacs_uart_rx_cb_t tc_cb) {
   int retval;
@@ -93,8 +93,8 @@ int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size,
   __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
 
   // Configure the RX DMA
-  retval = HAL_DMA_Start_IT(&uart_rx_dma_handles[bus], 
-                            (uint32_t)&huart->Instance->DR, 
+  retval = HAL_DMA_Start_IT(&uart_rx_dma_handles[bus],
+                            (uint32_t)&huart->Instance->DR,
                             buf, size);
 
   NVIC_EnableIRQ(hacs_uart_rx_dma_irq[bus]);

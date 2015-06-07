@@ -4,10 +4,10 @@
 #include "hacs_platform.h"
 #include "queue.h"
 
-#define NRF24_CSN_INACTIVE_HOLD_US	(2) // need some CSN inactive time
+#define NRF24_CSN_INACTIVE_HOLD_US  (2) // need some CSN inactive time
 
-#define NRF24_ACK  					(NRF24_COMMAND_W_TX_PAYLOAD)
-#define NRF24_NO_ACK 			  (NRF24_COMMAND_W_TX_PAYLOAD_NOACK)
+#define NRF24_ACK           (NRF24_COMMAND_W_TX_PAYLOAD)
+#define NRF24_NO_ACK        (NRF24_COMMAND_W_TX_PAYLOAD_NOACK)
 
 // Default device config: 1 byte CRC, PTX, Stand-I mode
 #define NRF24_BASE_CONFIGURATION (NRF24_EN_CRC | NRF24_CRCO | NRF24_PWR_UP)
@@ -20,8 +20,8 @@
 #endif
 
 typedef struct {
-	uint8_t len;
-	uint8_t buf[NRF24_MAX_MESSAGE_LEN];
+  uint8_t len;
+  uint8_t buf[NRF24_MAX_MESSAGE_LEN];
 } nrf24_msg_t;
 
 #define NRF24_MSG_QUEUE_LENGTH 5
@@ -29,9 +29,9 @@ typedef struct {
 // Defines convenient values for setting data rates in setRF()
 typedef enum
 {
-	NRF24DataRate1Mbps = 0,   ///< 1 Mbps
-	NRF24DataRate2Mbps,       ///< 2 Mbps
-	NRF24DataRate250kbps      ///< 250 kbps
+  NRF24DataRate1Mbps = 0,   ///< 1 Mbps
+  NRF24DataRate2Mbps,       ///< 2 Mbps
+  NRF24DataRate250kbps      ///< 250 kbps
 } NRF24DataRate;
 
 /// Convenient values for setting transmitter power in setRF()
@@ -39,10 +39,10 @@ typedef enum
 /// To be passed to setRF();
 typedef enum
 {
-	NRF24TransmitPowerm18dBm = 0,   ///< -18 dBm
-	NRF24TransmitPowerm12dBm,       ///< -12 dBm
-	NRF24TransmitPowerm6dBm,        ///< -6 dBm
-	NRF24TransmitPower0dBm          ///< 0 dBm
+  NRF24TransmitPowerm18dBm = 0,   ///< -18 dBm
+  NRF24TransmitPowerm12dBm,       ///< -12 dBm
+  NRF24TransmitPowerm6dBm,        ///< -6 dBm
+  NRF24TransmitPower0dBm          ///< 0 dBm
 } NRF24TransmitPower;
 
 // SPI Command names

@@ -16,7 +16,7 @@
 #define PRESSURE_REF_CAL_ITERATIONS           (3)
 
 static volatile uint8_t sample_lock;
-static xSemaphoreHandle start_sema4; 
+static xSemaphoreHandle start_sema4;
 static bmp085_cb_t singleshot_done_cb;
 static float *p_singleshot_alt;
 static int16_t *p_singleshot_temp; // in 0.1 Celcius
@@ -186,7 +186,7 @@ static int bmp085_get_pressure(int32_t b5, int32_t *p_pres) {
   retval = i2c_master_read_mem(HACS_I2C, BMP085_ADDR, BMP085_MSB_REG,
                                buf, sizeof(buf));
   HACS_REQUIRES(retval == HACS_NO_ERROR, done);
-  up = ((((uint32_t)buf[0]) << 16) | (((uint32_t)buf[1]) << 8) | 
+  up = ((((uint32_t)buf[0]) << 16) | (((uint32_t)buf[1]) << 8) |
         (uint32_t)buf[2]) >> (8 - BMP085_OSS);
 
   /* Calibrate the pressure reading.
@@ -194,27 +194,27 @@ static int bmp085_get_pressure(int32_t b5, int32_t *p_pres) {
    */
   b6 = b5 - 4000;
   // Calculate B3
-  x1 = (b2 * (b6 * b6)>>12)>>11;
-  x2 = (ac2 * b6)>>11;
+  x1 = (b2 * (b6 * b6) >> 12) >> 11;
+  x2 = (ac2 * b6) >> 11;
   x3 = x1 + x2;
-  b3 = (((((int32_t)ac1)*4 + x3)<<BMP085_OSS) + 2)>>2;
+  b3 = (((((int32_t)ac1) * 4 + x3) << BMP085_OSS) + 2) >> 2;
 
   // Calculate B4
-  x1 = (ac3 * b6)>>13;
-  x2 = (b1 * ((b6 * b6)>>12))>>16;
-  x3 = ((x1 + x2) + 2)>>2;
-  b4 = (ac4 * (uint32_t)(x3 + 32768))>>15;
+  x1 = (ac3 * b6) >> 13;
+  x2 = (b1 * ((b6 * b6) >> 12)) >> 16;
+  x3 = ((x1 + x2) + 2) >> 2;
+  b4 = (ac4 * (uint32_t)(x3 + 32768)) >> 15;
 
-  b7 = ((uint32_t)(up - b3) * (50000>>BMP085_OSS));
+  b7 = ((uint32_t)(up - b3) * (50000 >> BMP085_OSS));
   if (b7 < 0x80000000)
-      p = (b7<<1)/b4;
+    p = (b7 << 1) / b4;
   else
-      p = (b7/b4)<<1;
+    p = (b7 / b4) << 1;
 
-  x1 = (p>>8) * (p>>8);
-  x1 = (x1 * 3038)>>16;
-  x2 = (-7357 * p)>>16;
-  p += (x1 + x2 + 3791)>>4;
+  x1 = (p >> 8) * (p >> 8);
+  x1 = (x1 * 3038) >> 16;
+  x2 = (-7357 * p) >> 16;
+  p += (x1 + x2 + 3791) >> 4;
 
   // Report final result
   if (p_pres != NULL) *p_pres = p;
@@ -240,7 +240,7 @@ done:
 static float pressure_to_altitude(int32_t pres) {
   float altitude;
   float x;
-  x = pow((float)pres / (float)press_ref , 1.0/5.255);
+  x = pow((float)pres / (float)press_ref , 1.0 / 5.255);
   altitude = 44330.0 * (1.0 - x);
   return altitude;
 }

@@ -2,20 +2,20 @@
 #define _MPU6050_SERIAL_H_
 
 #include "hacs_platform.h"
-#include "queue.h" 
+#include "queue.h"
 
-#define MPU_DATA_QUEUE_LENGTH		(1)
+#define MPU_DATA_QUEUE_LENGTH   (1)
 
 #define MPU_DRIVER_SINGLESHOT_MODE  (1)
 #define MPU_DRIVER_CONTINUOUS_MODE  (0)
 
 typedef struct {
-	// Acceleration in g (Note that the coordinate system used here is
-	// different than the standard airplane body-axis system)
-	float ax;
-	float ay;
-	float az;
-	// Attitude in deg
+  // Acceleration in g (Note that the coordinate system used here is
+  // different than the standard airplane body-axis system)
+  float ax;
+  float ay;
+  float az;
+  // Attitude in deg
   float roll;
   float pitch;
   float yaw;

@@ -12,10 +12,10 @@
 #include "gps_serial.h"
 #include "mpu6050_serial.h"
 #include "bmp085.h"
-#include "hacs_sensor_manager.h"
+#include "hacs_sensor_sched.h"
 
 static uint8_t radio_test[32] = {
-	'b','e','e','f','\0'
+  'b', 'e', 'e', 'f', '\0'
 };
 
 static uint8_t gps_ht;
@@ -56,40 +56,40 @@ int hacs_console_cmd_dispatch(char *buf)
   int retval = 0;
 
   if (!strcmp(buf, "mag")) {
-  	int16_t magX = 0;
-  	int16_t magY = 0;
-  	int16_t magZ = 0;
-  	hmc5883_update_xyz(&magX, &magY, &magZ);
-  	printf("%hd %hd %hd\r\n", magX, magY, magZ);
+    int16_t magX = 0;
+    int16_t magY = 0;
+    int16_t magZ = 0;
+    hmc5883_update_xyz(&magX, &magY, &magZ);
+    printf("%hd %hd %hd\r\n", magX, magY, magZ);
 
   } else if (!strcmp(buf, "mag+")) {
-  	int16_t magX = 0;
-  	int16_t magY = 0;
-  	int16_t magZ = 0;
-  	while(!debug_uart_inpstat()) {
-  		hmc5883_update_xyz(&magX, &magY, &magZ);
-  		printf("%hd %hd %hd\r\n", magX, magY, magZ);
-  		vTaskDelay(MS_TO_TICKS(150));
-  	}
+    int16_t magX = 0;
+    int16_t magY = 0;
+    int16_t magZ = 0;
+    while (!debug_uart_inpstat()) {
+      hmc5883_update_xyz(&magX, &magY, &magZ);
+      printf("%hd %hd %hd\r\n", magX, magY, magZ);
+      vTaskDelay(MS_TO_TICKS(150));
+    }
 
   } else if (!strcmp(buf, "r")) {
-  	retval = nrf24_send(radio_test,sizeof(radio_test),NRF24_ACK);
+    retval = nrf24_send(radio_test, sizeof(radio_test), NRF24_ACK);
 
   } else if (!strcmp(buf, "rdump")) {
-  	nrf24_dump_registers();
+    nrf24_dump_registers();
 
   } else if (!strcmp(buf, "gps raw")) {
     uint8_t buf[128];
     gps_ht = 0;
     hacs_uart_start_listening(HACS_UART_GPS, (uint32_t)buf, 128, gps_ht_cb, gps_tc_cb);
-    while(!debug_uart_inpstat()) {
-      while(!gps_ht);
+    while (!debug_uart_inpstat()) {
+      while (!gps_ht);
       gps_ht = 0;
       gps_tc = 0;
       for (int i = 0; i < gps_rx_len; i++) {
         debug_uart_putchar(buf[i]);
       }
-      while(!gps_tc);
+      while (!gps_tc);
       for (int i = gps_rx_len; i < 128; i++) {
         debug_uart_putchar(buf[i]);
       }
@@ -101,10 +101,10 @@ int hacs_console_cmd_dispatch(char *buf)
     xQueueHandle q = gps_get_msg_queue();
 
     gps_start_parsing();
-    while(!debug_uart_inpstat()) {
+    while (!debug_uart_inpstat()) {
       xQueueReceive(q, &temp, portMAX_DELAY);
       printf("lat: %d long: %d speed: %d course: %d\r\n",
-             temp.latitude,temp.longitude,temp.speed,temp.course);
+             temp.latitude, temp.longitude, temp.speed, temp.course);
     }
     gps_stop_parsing();
 
@@ -112,14 +112,14 @@ int hacs_console_cmd_dispatch(char *buf)
     uint8_t buf[128];
     mpu_ht = 0;
     hacs_uart_start_listening(HACS_UART_MPU6050, (uint32_t)buf, 128, mpu_ht_cb, mpu_tc_cb);
-    while(!debug_uart_inpstat()) {
-      while(!mpu_ht);
+    while (!debug_uart_inpstat()) {
+      while (!mpu_ht);
       mpu_ht = 0;
       mpu_tc = 0;
       for (int i = 0; i < mpu_rx_len; i++) {
         debug_uart_putchar(buf[i]);
       }
-      while(!mpu_tc);
+      while (!mpu_tc);
       for (int i = mpu_rx_len; i < 128; i++) {
         debug_uart_putchar(buf[i]);
       }
@@ -130,10 +130,10 @@ int hacs_console_cmd_dispatch(char *buf)
     xQueueHandle q = mpu6050_get_msg_queue();
 
     mpu6050_start_parsing(MPU_DRIVER_CONTINUOUS_MODE);
-    while(!debug_uart_inpstat()) {
+    while (!debug_uart_inpstat()) {
       xQueueReceive(q, &temp, portMAX_DELAY);
       printf("ro: %d pi: %d ya: %d\r\n",
-             (int16_t)temp.roll,(int16_t)temp.pitch,(int16_t)temp.yaw);
+             (int16_t)temp.roll, (int16_t)temp.pitch, (int16_t)temp.yaw);
     }
     mpu6050_stop_parsing();
 
@@ -145,14 +145,14 @@ int hacs_console_cmd_dispatch(char *buf)
     bmp085_request_sample(&altitude, &temperature, bmp_cb);
     while (!bmp_done) vTaskDelay(MS_TO_TICKS(5));
     if (bmp_retval == HACS_NO_ERROR) {
-      printf("Temperature: %d (0.1 C)\t Altitude: %d (0.1 m)\r\n", temperature, (int)(altitude*10.0));
+      printf("Temperature: %d (0.1 C)\t Altitude: %d (0.1 m)\r\n", temperature, (int)(altitude * 10.0));
     } else {
       printf("Error: %d\r\n", bmp_retval);
     }
-  } else if (!strcmp(buf, "mgr start")) {
-    hacs_sensor_manager_start();
-  } else if (!strcmp(buf, "mgr stop")) {
-    hacs_sensor_manager_stop();
+  } else if (!strcmp(buf, "sensor start")) {
+    hacs_sensor_sched_start();
+  } else if (!strcmp(buf, "sensor stop")) {
+    hacs_sensor_sched_stop();
   }
 
   return retval;

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "hacs_platform.h"
-#include "hacs_sensor_manager.h"
+#include "hacs_sensor_sched.h"
 #include "queue.h"
 #include "semphr.h"
 
@@ -19,7 +19,7 @@ static xSemaphoreHandle bmp085_done_sema4;
 
 static void bmp085_done_cb(int retval);
 
-void hacs_sensor_manager_task(void *param) {
+void hacs_sensor_sched_task(void *param) {
   xQueueHandle mpu_msg_queue = mpu6050_get_msg_queue();
   xQueueHandle gps_msg_queue = gps_get_msg_queue();
   mpu_data_t mpu_data;
@@ -30,7 +30,7 @@ void hacs_sensor_manager_task(void *param) {
   portBASE_TYPE bmp085_data_available;
   portTickType xLastWakeTime;
   hacs_mode_t mode;
-  int16_t magx,magy,magz;
+  int16_t magx, magy, magz;
   int retval;
 
   bmp085_done_sema4 = xSemaphoreCreateBinary();
@@ -43,7 +43,7 @@ void hacs_sensor_manager_task(void *param) {
     if (mode == HACS_MODE_MAG_CAL) {
       vTaskDelay(MS_TO_TICKS(60)); // only want this to run at 10Hz
       hmc5883_update_xyz(&magx, &magy, &magz);
-      hacs_telem_send_magcal(magx,magy,magz);
+      hacs_telem_send_magcal(magx, magy, magz);
       continue;
     }
 
@@ -91,7 +91,7 @@ void hacs_sensor_manager_task(void *param) {
       hacs_telem_send_navd(gps_data.latitude, gps_data.longitude, gps_data.speed,
                            gps_data.course, temperature, 0);
     }
-    
+
     // TODO: decide what to send (e.g. send SysID packets?) depending on system state
     if (mode == HACS_MODE_SYSTEM_IDENTIFICATION) {
 
@@ -99,7 +99,7 @@ void hacs_sensor_manager_task(void *param) {
   }
 }
 
-int hacs_sensor_manager_start() {
+int hacs_sensor_sched_start() {
   int retval;
 
   retval = gps_start_parsing();
@@ -109,12 +109,12 @@ done:
   return retval;
 }
 
-int hacs_sensor_manager_stop() {
+int hacs_sensor_sched_stop() {
   int retval;
 
   retval = gps_stop_parsing();
   HACS_REQUIRES(retval == HACS_NO_ERROR, done);
-  
+
 done:
   return retval;
 }

@@ -4,28 +4,28 @@
 #include "hacs_gpio.h"
 #include "hacs_error_codes.h"
 
-void gpio_init_pin(gpio_port_t port, gpio_pin_t pin, 
+void gpio_init_pin(gpio_port_t port, gpio_pin_t pin,
                    gpio_mode_t mode, gpio_pupd_t pupd) {
-	GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitTypeDef GPIO_InitStruct;
 
-	GPIO_InitStruct.Pin = pin;
-  
+  GPIO_InitStruct.Pin = pin;
+
   if (mode == HACS_GPIO_MODE_OUTPUT_PP) {
-  	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   } else if (mode == HACS_GPIO_MODE_OUTPUT_OD) {
-  	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   } else if (mode == HACS_GPIO_MODE_INPUT) {
-  	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   }
 
   if (pupd == HACS_GPIO_PULL_UP) {
-  	GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
   } else if (pupd == HACS_GPIO_PULL_DOWN) {
-  	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   } else {
-  	GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
   }
-  
+
   GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
   GPIO_InitStruct.Alternate = 0;
 
@@ -33,19 +33,19 @@ void gpio_init_pin(gpio_port_t port, gpio_pin_t pin,
 }
 
 void gpio_write_high(gpio_port_t port, gpio_pin_t pin) {
-	HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
 }
 
 void gpio_write_low(gpio_port_t port, gpio_pin_t pin) {
-	HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
 }
 
 uint8_t gpio_read_pin(gpio_port_t port, gpio_pin_t pin) {
-	return HAL_GPIO_ReadPin(port, pin);
+  return HAL_GPIO_ReadPin(port, pin);
 }
 
 uint32_t gpio_read_port(gpio_port_t port) {
-	return port->IDR;
+  return port->IDR;
 }
 
 /*** GPIO External Interrupt ***/
@@ -69,7 +69,7 @@ static hacs_exti_cb_t exti_cb_assignment[GPIO_NUMBER] = {
 
 static uint32_t gpio_pin_to_num(gpio_pin_t pin) {
   uint8_t num = 0;
-  while(pin > GPIO_PIN_0) {
+  while (pin > GPIO_PIN_0) {
     pin = pin >> 1;
     num++;
   }
@@ -89,7 +89,7 @@ static uint32_t gpio_port_to_num(gpio_port_t port) {
   }
 }
 
-int gpio_exti_init(gpio_port_t port, gpio_pin_t pin, 
+int gpio_exti_init(gpio_port_t port, gpio_pin_t pin,
                    hacs_exti_cb_t cb) {
   uint32_t pin_num = gpio_pin_to_num(pin);
   uint32_t port_num = gpio_port_to_num(port);
@@ -121,8 +121,8 @@ int gpio_exti_init(gpio_port_t port, gpio_pin_t pin,
   return retval;
 }
 
-void gpio_exti_enable(gpio_port_t port, gpio_pin_t pin, 
-                     uint8_t rise, uint8_t fall) {
+void gpio_exti_enable(gpio_port_t port, gpio_pin_t pin,
+                      uint8_t rise, uint8_t fall) {
   uint32_t temp;
   uint32_t pin32 = pin;
   uint32_t pin_num = gpio_pin_to_num(pin);
@@ -159,7 +159,7 @@ void gpio_exti_enable(gpio_port_t port, gpio_pin_t pin,
   } else if (pin_num >= 10 && pin_num <= 15) {
     irq = EXTI15_10_IRQn;
   }
-  NVIC_SetPriority(irq, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY+1);
+  NVIC_SetPriority(irq, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1);
   NVIC_EnableIRQ(irq);
 }
 

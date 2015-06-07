@@ -36,7 +36,7 @@ void hacs_platform_init(void)
   __DMA1_CLK_ENABLE();
   __DMA2_CLK_ENABLE();
 
-	/* STM32F4xx HAL library initialization:
+  /* STM32F4xx HAL library initialization:
    - Configure the Flash prefetch, Flash preread and Buffer caches
    - Systick timer is configured by default as source of time base, but user
          can eventually implement his proper time base source (a general purpose
@@ -50,18 +50,18 @@ void hacs_platform_init(void)
   /* Configure the System clock to 100 MHz */
   system_clock_config();
 
-	/* Init debug UART */
+  /* Init debug UART */
   debug_uart_init(115200);
 
-	/* Init SPI master */
-  spi_master_init(HACS_SPI_NRF24, 1000000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_0);
+  /* Init SPI master */
+  spi_master_init(HACS_SPI_NRF24, 100000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_0);
 
-	/* Init I2C master */
-  if (i2c_master_init(HACS_I2C, 100000) != 0) {
+  /* Init I2C master */
+  if (i2c_master_init(HACS_I2C, 50000) != 0) {
     printf("Error in i2c_master_init!\r\n");
   }
 
-	/* Init USART */
+  /* Init USART */
   if (hacs_uart_init(HACS_UART_GPS, 115200,
                      HACS_UART_NOT_USE_TX_DMA, HACS_UART_USE_RX_DMA) != 0) {
     printf("Error in GPS uart_init!\r\n");
@@ -74,7 +74,7 @@ void hacs_platform_init(void)
   // Wait for devices to settle
   delay_us(1000);
 
-	// TODO: Move sensor init into the sensor_manager thread
+  // TODO: Move sensor init into the sensor_manager thread
   if (hmc5883_init() != 0) {
     printf("Error in hmc5883_init!\r\n");
   }
@@ -90,11 +90,11 @@ void hacs_platform_init(void)
 
 // Redirect putc to UART send
 #ifdef __GNUC__
-  /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-     set to 'Yes') calls __io_putchar() */
-  #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
+   set to 'Yes') calls __io_putchar() */
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 #else
-  #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
 
 // Retargets the C library printf function to the USART.
@@ -126,60 +126,60 @@ PUTCHAR_PROTOTYPE
   */
 static void system_clock_config(void)
 {
-	RCC_ClkInitTypeDef RCC_ClkInitStruct;
-	RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
 
-	/* Enable Power Control clock */
-	__PWR_CLK_ENABLE();
+  /* Enable Power Control clock */
+  __PWR_CLK_ENABLE();
 
-	/* The voltage scaling allows optimizing the power consumption when the device is
-	 clocked below the maximum system frequency, to update the voltage scaling value
-	 regarding system frequency refer to product datasheet.  */
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  /* The voltage scaling allows optimizing the power consumption when the device is
+   clocked below the maximum system frequency, to update the voltage scaling value
+   regarding system frequency refer to product datasheet.  */
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-	/* Enable HSI Oscillator and activate PLL with HSI as source */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	RCC_OscInitStruct.HSICalibrationValue = 0x10;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-	RCC_OscInitStruct.PLL.PLLM = 16;
-	RCC_OscInitStruct.PLL.PLLN = 400;
-	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
-	RCC_OscInitStruct.PLL.PLLQ = 7;
-	if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-		error_handler();
-	}
+  /* Enable HSI Oscillator and activate PLL with HSI as source */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 0x10;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 16;
+  RCC_OscInitStruct.PLL.PLLN = 400;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+    error_handler();
+  }
 
-	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
-	 clocks dividers */
-	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-	if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
-		error_handler();
-	}
+  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+   clocks dividers */
+  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
+    error_handler();
+  }
 }
 
 static void error_handler(void)
 {
-    while(1)
-    {
-    }
+  while (1)
+  {
+  }
 }
 
 #ifdef  USE_FULL_ASSERT
 void assert_failed(uint8_t* file, uint32_t line)
 {
-	/* User can add his own implementation to report the file name and line number,
-	 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* User can add his own implementation to report the file name and line number,
+   ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 
-	/* Infinite loop */
-	while (1)
-	{
-	}
+  /* Infinite loop */
+  while (1)
+  {
+  }
 }
 #endif
 

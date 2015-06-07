@@ -4,7 +4,7 @@
 #include "stm32f4xx_hal.h"
 #include "hacs_platform_resources.h"
 
-static UART_HandleTypeDef UartHandle; 
+static UART_HandleTypeDef UartHandle;
 
 int debug_uart_init(uint32_t baud)
 {
@@ -28,7 +28,7 @@ char debug_uart_getchar(void)
 {
 	char c;
 	HAL_UART_Receive(&UartHandle, (uint8_t *)&c, 1, 0xFFFF);
-  return c;
+	return c;
 }
 
 int debug_uart_inpstat(void)

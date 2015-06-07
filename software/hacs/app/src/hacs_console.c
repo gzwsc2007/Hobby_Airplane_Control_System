@@ -32,8 +32,8 @@ void hacs_console_task(void *param)
 	printf("Welcome to HACS console!\n\r");
 	debug_uart_putchar('>');
 
-	while(1) {
-		while(debug_uart_inpstat()) {
+	while (1) {
+		while (debug_uart_inpstat()) {
 			c = debug_uart_getchar();
 
 			if (c == LF || c == CR) {

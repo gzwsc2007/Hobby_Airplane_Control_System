@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include "hacs_platform.h"
 #include "hacs_sensor_sched.h"
 #include "queue.h"
@@ -10,9 +11,14 @@
 #include "hmc5883.h"
 #include "hacs_system_config.h"
 #include "hacs_telemetry.h"
+#include "hacs_sensor_cal.h"
+
+#include "MadgwickAHRS.h"
 
 #define MPU6050_TIMEOUT_MS    (100)
 #define BMP085_TIMEOUT_MS     (50)
+
+#define DECLINATIOIN_COMPENSATION   (13.37f)
 
 static int bmp085_retval;
 static xSemaphoreHandle bmp085_done_sema4;
@@ -31,6 +37,8 @@ void hacs_sensor_sched_task(void *param) {
   portTickType xLastWakeTime;
   hacs_mode_t mode;
   int16_t magx, magy, magz;
+  float32_t calmx, calmy, calmz;
+  float roll, pitch, yaw;
   int retval;
 
   bmp085_done_sema4 = xSemaphoreCreateBinary();
@@ -58,14 +66,20 @@ void hacs_sensor_sched_task(void *param) {
 
     // TODO: request airspeed reading
 
-    // TODO: obtain calibrated magnetic heading from compass
-
-    // TODO: fuse the compass heading and the MPU yaw
+    // obtain calibrated magnetic heading from compass
+    hmc5883_update_xyz(&magx, &magy, &magz);
+    hacs_cal_mag_apply((float32_t)magx, (float32_t)magy, (float32_t)magz,
+                       &calmx, &calmy, &calmz);
 
     // Poll GPS for data. Don't need to block because GPS is much slower.
     gps_data_available = xQueueReceive(gps_msg_queue, &gps_data, 0);
 
     xQueueReceive(mpu_msg_queue, &mpu_data, portMAX_DELAY);
+
+    // Perform sensor fusion on accel, gyro, magnetometer readings
+    MadgwickAHRSupdate(mpu_data.rollspeed, mpu_data.pitchspeed, mpu_data.yawspeed,
+                       mpu_data.ax, mpu_data.ay, mpu_data.az,
+                       calmx, calmy, calmz);
 
     // Wait for BMP085 to finish
     bmp085_data_available = xSemaphoreTake(bmp085_done_sema4, portMAX_DELAY);
@@ -79,12 +93,21 @@ void hacs_sensor_sched_task(void *param) {
 
     /*** At this point, all the sensor data are ready ***/
 
+    // Translate quaternions to euler angles
+    roll  = atan2(2.0f * (q0 * q1 + q2 * q3), q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3);
+    pitch = -asin(2.0f * (q1 * q3 - q0 * q2));
+    yaw   = atan2(2.0f * (q1 * q2 + q0 * q3), q0 * q0 + q1 * q1 - q2 * q2 - q3 * q3);
+    roll = roll * 180.0f / PI;
+    pitch = pitch * 180.0f / PI;
+    yaw = yaw * 180.0f / PI;
+    yaw = yaw - DECLINATIOIN_COMPENSATION;
+
     // TODO: pack sensor data into a generic form defined by the Controller?
 
     // TODO: Notify Controller
 
     // Notify telemetry TX
-    hacs_telem_send_pfd(mpu_data.roll, mpu_data.pitch, mpu_data.yaw, altitude, 0, 0);
+    hacs_telem_send_pfd(roll, pitch, yaw, altitude, 0, 0);
 
     if (gps_data_available) {
       // NavD packets are driven by GPS

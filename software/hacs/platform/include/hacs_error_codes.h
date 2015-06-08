@@ -14,6 +14,8 @@ typedef enum {
 
   HACS_ERR_ALREADY_IN_USE = -40,
 
+  HACS_CAL_INVALID = -50,
+
 } hacs_error_t;
 
 #endif

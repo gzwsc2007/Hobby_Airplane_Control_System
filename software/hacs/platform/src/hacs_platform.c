@@ -54,7 +54,7 @@ void hacs_platform_init(void)
   debug_uart_init(115200);
 
   /* Init SPI master */
-  spi_master_init(HACS_SPI_NRF24, 100000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_0);
+  spi_master_init(HACS_SPI_NRF24, 50000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_0);
 
   /* Init I2C master */
   if (i2c_master_init(HACS_I2C, 50000) != 0) {

@@ -26,7 +26,7 @@ static int nrf24_send_cmd(uint8_t cmd);
   * Partly ported from Mike McCauley's (mikem@open.com.au)
   * NRF24 library for Arduino.
 **/
-static int nrf24_soft_reset(void);
+static int nrf24_default_config(void);
 static int nrf24_clear_irq(uint8_t bits_to_clear);
 static int nrf24_set_channel(uint8_t chan);
 static int nrf24_set_this_addr(uint8_t *addr, uint8_t len);
@@ -74,9 +74,11 @@ void nrf24_driver_task(void *param) {
 
     if (nrf24_status & NRF24_RX_DR) {
       rx.len = 0;
-      nrf24_recv(rx.buf, &rx.len);
-
-      xQueueSend(msg_queue, &rx, MS_TO_TICKS(100));
+      if (nrf24_recv(rx.buf, &rx.len) != HACS_NO_ERROR) {
+        nrf24_send_cmd(NRF24_COMMAND_FLUSH_RX);
+      } else {
+        xQueueSend(msg_queue, &rx, MS_TO_TICKS(100));
+      }
     }
 
     if (nrf24_status & NRF24_MAX_RT) {
@@ -160,11 +162,6 @@ static int nrf24_init(void) {
 static int nrf24_radio_config(void) {
   int retval;
 
-  retval = nrf24_soft_reset();
-  if (retval != HAL_OK) {
-    return retval;
-  }
-
   retval = nrf24_clear_irq(NRF24_RX_DR | NRF24_TX_DS | NRF24_MAX_RT);
   if (retval != HAL_OK) {
     return retval;
@@ -227,6 +224,12 @@ static int nrf24_radio_config(void) {
 
   // Configure RF channel and power
   retval = nrf24_set_rf(NRF24DataRate250kbps, NRF24TransmitPower0dBm);
+  if (retval != HAL_OK) {
+    return retval;
+  }
+
+  // default config
+  retval = nrf24_default_config();
 
   // Enter Standby-II mode as we don't care about power consumption
   NRF24_CE_HIGH();
@@ -267,10 +270,10 @@ int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd) {
  *
  * Return HAL_OK if no error.
  */
-static int nrf24_soft_reset(void)
+static int nrf24_default_config(void)
 {
   NRF24_CE_LOW();
-  delay_us(NRF24_CSN_INACTIVE_HOLD_US);
+  vTaskDelay(MS_TO_TICKS(10));
   return nrf24_write_reg(NRF24_REG_00_CONFIG, NRF24_BASE_CONFIGURATION);
 }
 

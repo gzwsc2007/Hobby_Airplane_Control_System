@@ -57,5 +57,12 @@
       <field type="uint32_t" name="payload">Optional command payload </field>
     </message>
 
+    <message id="156" name="MagCalResult">
+      <description>This message encodes magnetometer calibration results. </description>
+      <field type="float" name="B_field">radius of the calibrated sphere </field>
+      <field type="float[3]" name="hard_iron">hard iron offsets </field>
+      <field type="float[9]" name="soft_iron">soft iron matrix (W_inverted) </field>
+    </message>
+
   </messages>
 </mavlink>

@@ -41,17 +41,14 @@ int hacs_cal_mag_apply(float32_t inx, float32_t iny, float32_t inz,
   return HACS_NO_ERROR;
 }
 
-int hacs_cal_mag_config(float32_t x_offset, float32_t y_offset, float32_t z_offsest,
-                        float32_t *soft_iron_data) {
+int hacs_cal_mag_config(float32_t *hard_iron_data, float32_t *soft_iron_data) {
   mag_cal_valid = 0;
 
   // Update RAM-cached calibration data
-  hard_iron_matrix_data[0] = x_offset;
-  hard_iron_matrix_data[1] = y_offset;
-  hard_iron_matrix_data[2] = z_offsest;
+  memcpy(hard_iron_matrix_data, hard_iron_data, sizeof(float32_t) * HARD_IRON_MAT_ROW * HARD_IRON_MAT_COL);
   arm_mat_init_f32(&hard_iron_matrix, HARD_IRON_MAT_ROW, HARD_IRON_MAT_COL, hard_iron_matrix_data);
 
-  memcpy(soft_iron_matrix_data, soft_iron_data, SOFT_IRON_MAT_ROW * SOFT_IRON_MAT_COL);
+  memcpy(soft_iron_matrix_data, soft_iron_data, sizeof(float32_t) * SOFT_IRON_MAT_ROW * SOFT_IRON_MAT_COL);
   arm_mat_init_f32(&soft_iron_matrix, SOFT_IRON_MAT_ROW, SOFT_IRON_MAT_COL, soft_iron_matrix_data);
 
   mag_cal_valid = 1;

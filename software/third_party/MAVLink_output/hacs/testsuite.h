@@ -307,6 +307,51 @@ static void mavlink_test_syscmd(uint8_t system_id, uint8_t component_id, mavlink
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 }
 
+static void mavlink_test_magcalresult(uint8_t system_id, uint8_t component_id, mavlink_message_t *last_msg)
+{
+	mavlink_message_t msg;
+        uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+        uint16_t i;
+	mavlink_magcalresult_t packet_in = {
+		17.0,{ 45.0, 46.0, 47.0 },{ 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0 }
+    };
+	mavlink_magcalresult_t packet1, packet2;
+        memset(&packet1, 0, sizeof(packet1));
+        	packet1.B_field = packet_in.B_field;
+        
+        	mav_array_memcpy(packet1.hard_iron, packet_in.hard_iron, sizeof(float)*3);
+        	mav_array_memcpy(packet1.soft_iron, packet_in.soft_iron, sizeof(float)*9);
+        
+
+        memset(&packet2, 0, sizeof(packet2));
+	mavlink_msg_magcalresult_encode(system_id, component_id, &msg, &packet1);
+	mavlink_msg_magcalresult_decode(&msg, &packet2);
+        MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
+
+        memset(&packet2, 0, sizeof(packet2));
+	mavlink_msg_magcalresult_pack(system_id, component_id, &msg , packet1.B_field , packet1.hard_iron , packet1.soft_iron );
+	mavlink_msg_magcalresult_decode(&msg, &packet2);
+        MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
+
+        memset(&packet2, 0, sizeof(packet2));
+	mavlink_msg_magcalresult_pack_chan(system_id, component_id, MAVLINK_COMM_0, &msg , packet1.B_field , packet1.hard_iron , packet1.soft_iron );
+	mavlink_msg_magcalresult_decode(&msg, &packet2);
+        MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
+
+        memset(&packet2, 0, sizeof(packet2));
+        mavlink_msg_to_send_buffer(buffer, &msg);
+        for (i=0; i<mavlink_msg_get_send_buffer_length(&msg); i++) {
+        	comm_send_ch(MAVLINK_COMM_0, buffer[i]);
+        }
+	mavlink_msg_magcalresult_decode(last_msg, &packet2);
+        MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
+        
+        memset(&packet2, 0, sizeof(packet2));
+	mavlink_msg_magcalresult_send(MAVLINK_COMM_1 , packet1.B_field , packet1.hard_iron , packet1.soft_iron );
+	mavlink_msg_magcalresult_decode(last_msg, &packet2);
+        MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
+}
+
 static void mavlink_test_hacs(uint8_t system_id, uint8_t component_id, mavlink_message_t *last_msg)
 {
 	mavlink_test_pfd(system_id, component_id, last_msg);
@@ -315,6 +360,7 @@ static void mavlink_test_hacs(uint8_t system_id, uint8_t component_id, mavlink_m
 	mavlink_test_magcal(system_id, component_id, last_msg);
 	mavlink_test_sysstate(system_id, component_id, last_msg);
 	mavlink_test_syscmd(system_id, component_id, last_msg);
+	mavlink_test_magcalresult(system_id, component_id, last_msg);
 }
 
 #ifdef __cplusplus

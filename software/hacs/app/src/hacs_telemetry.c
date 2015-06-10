@@ -5,6 +5,7 @@
 #include "nrf24l01.h"
 #include "mavlink.h"
 #include "hacs_system_config.h"
+#include "hacs_sensor_cal.h"
 
 #define SYSTEM_ID     (250)
 #define COMPONENT_ID  (125)
@@ -16,7 +17,13 @@ static uint8_t magcal_struct_busy;
 static mavlink_pfd_t pfd_s;
 static mavlink_navd_t navd_s;
 static mavlink_magcal_t magcal_s;
+// TODO: To save RAM, for RX, instead of having a struct for each message type,
+// I can have a single buffer that's large enough to hold any type
+// of message struct, and then just reuse the buffer and cast to
+// the appropriate struct each time. This is possible because we will
+// only ever be processing one RX packet at a time
 static mavlink_syscmd_t syscmd_s;
+static mavlink_magcalresult_t magcalresult_s;
 
 static mavlink_message_t rx_msg;
 static mavlink_message_t tx_msg;
@@ -49,6 +56,11 @@ void hacs_telemetry_rx_task(void *param) {
         case MAVLINK_MSG_ID_SysCmd:
           mavlink_msg_syscmd_decode(&rx_msg, &syscmd_s);
           handle_syscmd(&syscmd_s);
+          break;
+        case MAVLINK_MSG_ID_MagCalResult:
+          mavlink_msg_magcalresult_decode(&rx_msg, &magcalresult_s);
+          hacs_cal_mag_config(magcalresult_s.hard_iron, magcalresult_s.soft_iron);
+          break;
         default: break;
         }
       }

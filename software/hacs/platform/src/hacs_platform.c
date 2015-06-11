@@ -74,11 +74,6 @@ void hacs_platform_init(void)
   // Wait for devices to settle
   delay_us(1000);
 
-  // TODO: Move sensor init into the sensor_manager thread
-  if (hmc5883_init() != 0) {
-    printf("Error in hmc5883_init!\r\n");
-  }
-
   /* Early (pre-scheduler) init for devices */
   nrf24_early_init();
   gps_early_init();
@@ -161,6 +156,11 @@ static void system_clock_config(void)
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
     error_handler();
   }
+}
+
+void vApplicationStackOverflowHook() {
+  printf("Stack Overflow!!\r\n");
+  error_handler();
 }
 
 static void error_handler(void)

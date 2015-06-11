@@ -21,7 +21,11 @@ int debug_uart_init(uint32_t baud)
 
 int debug_uart_putchar(char c)
 {
-	return HAL_UART_Transmit(&UartHandle, (uint8_t *)&c, 1, 0xFFFF);
+	while(!(USART2->SR & USART_SR_TXE));
+	USART2->DR = c;
+	while(!(USART2->SR & USART_SR_TC));
+	return 0;
+	//return HAL_UART_Transmit(&UartHandle, (uint8_t *)&c, 1, 0xFFFF);
 }
 
 char debug_uart_getchar(void)

@@ -182,7 +182,10 @@
       <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_console_commands.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_sensor_manager.c</name>
+      <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_sensor_cal.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_sensor_sched.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_system_config.c</name>
@@ -250,9 +253,6 @@
   </group>
   <group>
     <name>tps</name>
-    <group>
-      <name>CMSIS</name>
-    </group>
     <group>
       <name>FreeRTOS</name>
       <group>
@@ -454,6 +454,9 @@
         <name>$PROJ_DIR$\..\..\software\third_party\STM32F4xx_HAL_Driver\Src\stm32f4xx_ll_usb.c</name>
       </file>
     </group>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\third_party\MadgwickAHRS\MadgwickAHRS.c</name>
+    </file>
   </group>
 </project>
 

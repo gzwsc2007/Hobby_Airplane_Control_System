@@ -39,20 +39,20 @@
         <option>
           <name>Input variant</name>
           <version>3</version>
-          <state>6</state>
+          <state>1</state>
         </option>
         <option>
           <name>Input description</name>
-          <state>No specifier n, no float nor long long, no scan set, no assignment suppressing.</state>
+          <state>Full formatting.</state>
         </option>
         <option>
           <name>Output variant</name>
           <version>2</version>
-          <state>5</state>
+          <state>1</state>
         </option>
         <option>
           <name>Output description</name>
-          <state>No specifier a, A, no specifier n, no float nor long long.</state>
+          <state>Full formatting.</state>
         </option>
         <option>
           <name>GOutputBinary</name>
@@ -171,6 +171,7 @@
           <state>USE_HAL_DRIVER</state>
           <state>STM32F411xE</state>
           <state>ARM_MATH_CM4</state>
+          <state>__FPU_PRESENT</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -302,13 +303,13 @@
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\hacs\app\include</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\hacs\platform\include</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\CMSIS\Device\ST\STM32F4xx\Include</state>
-          <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\CMSIS\Include</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\STM32F4xx_HAL_Driver\Inc</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\FreeRTOS\Source\include</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\FreeRTOS\Source\portable\IAR\ARM_CM4F</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\hacs\device\inc</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\MAVLink_output\hacs</state>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\MAVLink_output</state>
+          <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\MadgwickAHRS</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -873,7 +874,7 @@
         </option>
         <option>
           <name>IlinkOptInline</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IlinkOptExceptionsAllow</name>
@@ -889,7 +890,7 @@
         </option>
         <option>
           <name>IlinkOptMergeDuplSections</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IlinkOptUseVfe</name>
@@ -1907,7 +1908,10 @@
       <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_console_commands.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_sensor_manager.c</name>
+      <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_sensor_cal.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_sensor_sched.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\software\hacs\app\src\hacs_system_config.c</name>
@@ -1975,9 +1979,6 @@
   </group>
   <group>
     <name>tps</name>
-    <group>
-      <name>CMSIS</name>
-    </group>
     <group>
       <name>FreeRTOS</name>
       <group>
@@ -2179,6 +2180,9 @@
         <name>$PROJ_DIR$\..\..\software\third_party\STM32F4xx_HAL_Driver\Src\stm32f4xx_ll_usb.c</name>
       </file>
     </group>
+    <file>
+      <name>$PROJ_DIR$\..\..\software\third_party\MadgwickAHRS\MadgwickAHRS.c</name>
+    </file>
   </group>
 </project>
 

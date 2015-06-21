@@ -20,8 +20,12 @@
 
 #define DECLINATIOIN_COMPENSATION   (13.37f)
 
+#define ALPHA_ACCEL     (0.7f)
+#define ALPHA_GYRO      (0.05f)
+
 static int bmp085_retval;
 static xSemaphoreHandle bmp085_done_sema4;
+uint8_t g_sensor_log_enable = 0;
 
 static void bmp085_done_cb(int retval);
 
@@ -39,7 +43,17 @@ void hacs_sensor_sched_task(void *param) {
   int16_t magx, magy, magz;
   float32_t calmx, calmy, calmz;
   float roll, pitch, yaw;
+  float ax = 0;
+  float ay = 0;
+  float az = 0;
+  float gx = 0;
+  float gy = 0;
+  float gz = 0;
   int retval;
+
+  if (hmc5883_init() != 0) {
+    printf("Error in hmc5883_init!\r\n");
+  }
 
   bmp085_done_sema4 = xSemaphoreCreateBinary();
   xLastWakeTime = xTaskGetTickCount();
@@ -76,9 +90,16 @@ void hacs_sensor_sched_task(void *param) {
 
     xQueueReceive(mpu_msg_queue, &mpu_data, portMAX_DELAY);
 
-    // Perform sensor fusion on accel, gyro, magnetometer readings
-    MadgwickAHRSupdate(mpu_data.rollspeed, mpu_data.pitchspeed, mpu_data.yawspeed,
-                       mpu_data.ax, mpu_data.ay, mpu_data.az,
+    // Use a simple first order IIR filter to low-pass filter the accel and gyro readings
+    gx = mpu_data.p * (1.0-ALPHA_GYRO) + gx * ALPHA_GYRO;
+    gy = mpu_data.q * (1.0-ALPHA_GYRO) + gy * ALPHA_GYRO;
+    gz = mpu_data.r * (1.0-ALPHA_GYRO) + gz * ALPHA_GYRO;
+    ax = mpu_data.ax * (1.0-ALPHA_ACCEL) + ax * ALPHA_ACCEL;
+    ay = mpu_data.ay * (1.0-ALPHA_ACCEL) + ay * ALPHA_ACCEL;
+    az = mpu_data.az * (1.0-ALPHA_ACCEL) + az * ALPHA_ACCEL;
+    // Perform sensor fusion on accel, gyro, magnetometer readings.
+    MadgwickAHRSupdate(gx*PI/180.0f, gy*PI/180.0f, gz*PI/180.0f,
+                       ax, ay, az,
                        calmx, calmy, calmz);
 
     // Wait for BMP085 to finish
@@ -100,7 +121,11 @@ void hacs_sensor_sched_task(void *param) {
     roll = roll * 180.0f / PI;
     pitch = pitch * 180.0f / PI;
     yaw = yaw * 180.0f / PI;
-    yaw = yaw - DECLINATIOIN_COMPENSATION;
+    yaw = yaw + DECLINATIOIN_COMPENSATION;
+
+    if (g_sensor_log_enable) {
+      printf("%f\t%f\t%f\r\n%f\t%f\t%f\r\n%f\t%f\t%f\r\n\r\n",gx,gy,gz,ax,ay,az,calmx,calmy,calmz);
+    }
 
     // TODO: pack sensor data into a generic form defined by the Controller?
 

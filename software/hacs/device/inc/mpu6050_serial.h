@@ -10,8 +10,7 @@
 #define MPU_DRIVER_CONTINUOUS_MODE  (0)
 
 typedef struct {
-  // Acceleration in g (Note that the coordinate system used here is
-  // different than the standard airplane body-axis system)
+  // Acceleration in g (Airplane body-axis coordinate system)
   float ax;
   float ay;
   float az;
@@ -20,9 +19,9 @@ typedef struct {
   float pitch;
   float yaw;
   // Angular velocities in deg/s
-  float rollspeed;
-  float pitchspeed;
-  float yawspeed;
+  float p;
+  float q;
+  float r;
   // Temperature in C
   float temperature;
 } mpu_data_t;

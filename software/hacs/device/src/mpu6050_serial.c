@@ -131,7 +131,7 @@ static int mpu_parse_buf(uint8_t *buf, mpu_data_t *m) {
   {
     // accel packet
     if (buf[ptr++] == 0x51) {
-      m->ax = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 16.0;
+      m->ax = -((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 16.0;
       ptr += 2;
       m->ay = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 16.0;
       ptr += 2;
@@ -146,11 +146,11 @@ static int mpu_parse_buf(uint8_t *buf, mpu_data_t *m) {
 
     // angular vel packet
     if (buf[ptr++] == 0x52) {
-      m->rollspeed = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 2000.0;
+      m->p = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 2000.0;
       ptr += 2;
-      m->pitchspeed = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 2000.0;
+      m->q = -((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 2000.0;
       ptr += 2;
-      m->yawspeed = ((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 2000.0;
+      m->r = -((int16_t)(buf[ptr + 1] << 8 | buf[ptr])) / 32768.0 * 2000.0;
       ptr += 5; // ignore temperature
     } else {
       return -1;

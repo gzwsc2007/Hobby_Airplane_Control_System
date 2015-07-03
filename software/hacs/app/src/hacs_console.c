@@ -33,38 +33,34 @@ void hacs_console_task(void *param)
 	debug_uart_putchar('>');
 
 	while (1) {
-		while (debug_uart_inpstat()) {
-			c = debug_uart_getchar();
+		// Wait for a char to be received
+		c = debug_uart_blocking_getchar();
 
-			if (c == LF || c == CR) {
-				console_put_eol();
-				buf[cursor] = '\0';
-				cursor = 0;
-				retval = hacs_console_cmd_dispatch(buf);
-				if (retval != 0) {
-					printf("*** Status %d ***", retval);
-				}
-				console_put_eol();
-				debug_uart_putchar('>');
-			} else if (c == BS || c == DEL) {
-				if (cursor > 0) {
-					console_put_bs();
-					cursor--;
-				}
-			} else {
-				// Make sure we don't overflow the line buffer.
-				// Need to reserve 1 byte for the NULL terminator.
-				if (cursor >= CONSOLE_LINE_BUFFER_SIZE - 1) {
-					cursor = CONSOLE_LINE_BUFFER_SIZE - 2;
-					debug_uart_putchar(BS);
-				}
-				debug_uart_putchar(c);
-				buf[cursor] = c;
-				cursor++;
+		if (c == LF || c == CR) {
+			console_put_eol();
+			buf[cursor] = '\0';
+			cursor = 0;
+			retval = hacs_console_cmd_dispatch(buf);
+			if (retval != 0) {
+				printf("*** Retval %d ***", retval);
 			}
+			console_put_eol();
+			debug_uart_putchar('>');
+		} else if (c == BS || c == DEL) {
+			if (cursor > 0) {
+				console_put_bs();
+				cursor--;
+			}
+		} else {
+			// Make sure we don't overflow the line buffer.
+			// Need to reserve 1 byte for the NULL terminator.
+			if (cursor >= CONSOLE_LINE_BUFFER_SIZE - 1) {
+				cursor = CONSOLE_LINE_BUFFER_SIZE - 2;
+				debug_uart_putchar(BS);
+			}
+			debug_uart_putchar(c);
+			buf[cursor] = c;
+			cursor++;
 		}
-
-		// TODO: change this to wait on an event (instead of contantly polling)
-		vTaskDelay(MS_TO_TICKS(40));
 	}
 }

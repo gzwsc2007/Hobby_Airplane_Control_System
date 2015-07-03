@@ -111,6 +111,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
     /* Enable GPIO TX/RX clock */
     USART2_TX_GPIO_CLK_ENABLE();
     USART2_RX_GPIO_CLK_ENABLE();
+
+    /* Enable USART2 clock */
+    __USART2_CLK_ENABLE();
     
     /*##-2- Configure peripheral GPIO ##########################################*/  
     /* UART TX GPIO pin configuration  */
@@ -126,8 +129,10 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
     GPIO_InitStruct.Alternate = USART2_RX_AF;
     HAL_GPIO_Init(USART2_RX_PORT, &GPIO_InitStruct);
 
-    /* Enable USART2 clock */
-    __USART2_CLK_ENABLE();
+    /* Enable RXNE interrupt */
+    __HAL_UART_ENABLE_IT(huart, UART_IT_RXNE);
+    NVIC_SetPriority(USART2_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 3);
+    NVIC_EnableIRQ(USART2_IRQn);
     
   }  else if (huart->Instance==USART6) {
     GPIO_InitTypeDef  GPIO_InitStruct;

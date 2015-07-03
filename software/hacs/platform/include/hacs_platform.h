@@ -5,13 +5,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "hacs_error_codes.h"
+#include "stm32f411xe.h"
+#include "core_cm4.h"
 
 #define MS_TO_TICKS(ms)                 ((ms * configTICK_RATE_HZ + 999) / 1000)
-
-#ifndef __GNUC__
-static inline void __disable_irq(void) { asm("cpsid"); }
-static inline void __enable_irq(void) { asm("cpsie"); }
-#endif
 
 #define HACS_REQUIRES(__condition__, __label__) do { if (!(__condition__)) goto __label__; } while(0)
 
@@ -19,13 +16,13 @@ extern uint8_t hacs_critical_ref_count;
 
 void hacs_platform_init(void);
 
-static inline void hacs_enter_critical(void)
+__STATIC_INLINE void hacs_enter_critical(void)
 {
 	__disable_irq();
 	hacs_critical_ref_count++;
 }
 
-static inline void hacs_exit_critical(void)
+__STATIC_INLINE void hacs_exit_critical(void)
 {
 	hacs_critical_ref_count--;
 	if (hacs_critical_ref_count == 0) {
@@ -34,7 +31,7 @@ static inline void hacs_exit_critical(void)
 }
 
 // Only works @ 100MHz CPU clock
-static inline void delay_us(uint32_t us)
+__STATIC_INLINE void delay_us(uint32_t us)
 {
 	for (uint32_t i = 0; i < 100 * us; i++) {
 	}

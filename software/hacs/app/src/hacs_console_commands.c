@@ -68,7 +68,7 @@ int hacs_console_cmd_dispatch(char *buf)
     int16_t magX = 0;
     int16_t magY = 0;
     int16_t magZ = 0;
-    while (!debug_uart_inpstat()) {
+    while (!debug_uart_rxne()) {
       hmc5883_update_xyz(&magX, &magY, &magZ);
       printf("%hd %hd %hd\r\n", magX, magY, magZ);
       vTaskDelay(MS_TO_TICKS(150));
@@ -84,7 +84,7 @@ int hacs_console_cmd_dispatch(char *buf)
     uint8_t buf[128];
     gps_ht = 0;
     hacs_uart_start_listening(HACS_UART_GPS, (uint32_t)buf, 128, gps_ht_cb, gps_tc_cb);
-    while (!debug_uart_inpstat()) {
+    while (!debug_uart_rxne()) {
       while (!gps_ht);
       gps_ht = 0;
       gps_tc = 0;
@@ -103,7 +103,7 @@ int hacs_console_cmd_dispatch(char *buf)
     xQueueHandle q = gps_get_msg_queue();
 
     gps_start_parsing();
-    while (!debug_uart_inpstat()) {
+    while (!debug_uart_rxne()) {
       xQueueReceive(q, &temp, portMAX_DELAY);
       printf("lat: %d long: %d speed: %d course: %d\r\n",
              temp.latitude, temp.longitude, temp.speed, temp.course);
@@ -114,7 +114,7 @@ int hacs_console_cmd_dispatch(char *buf)
     uint8_t buf[128];
     mpu_ht = 0;
     hacs_uart_start_listening(HACS_UART_MPU6050, (uint32_t)buf, 128, mpu_ht_cb, mpu_tc_cb);
-    while (!debug_uart_inpstat()) {
+    while (!debug_uart_rxne()) {
       while (!mpu_ht);
       mpu_ht = 0;
       mpu_tc = 0;
@@ -132,7 +132,7 @@ int hacs_console_cmd_dispatch(char *buf)
     xQueueHandle q = mpu6050_get_msg_queue();
 
     mpu6050_start_parsing(MPU_DRIVER_CONTINUOUS_MODE);
-    while (!debug_uart_inpstat()) {
+    while (!debug_uart_rxne()) {
       xQueueReceive(q, &temp, portMAX_DELAY);
       printf("ro: %d pi: %d ya: %d\r\n",
              (int16_t)temp.roll, (int16_t)temp.pitch, (int16_t)temp.yaw);

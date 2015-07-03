@@ -1,13 +1,17 @@
 #include "hacs_platform.h"
 #include "hacs_debug_uart.h"
-
 #include "stm32f4xx_hal.h"
 #include "hacs_platform_resources.h"
+#include "semphr.h"
 
 static UART_HandleTypeDef UartHandle;
+static xSemaphoreHandle rx_sem;
+static volatile char buffered_char;
 
 int debug_uart_init(uint32_t baud)
 {
+	rx_sem = xSemaphoreCreateBinary();
+
 	UartHandle.Instance        = USART2;
 	UartHandle.Init.BaudRate   = baud;
 	UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
@@ -25,17 +29,30 @@ int debug_uart_putchar(char c)
 	USART2->DR = c;
 	while(!(USART2->SR & USART_SR_TC));
 	return 0;
-	//return HAL_UART_Transmit(&UartHandle, (uint8_t *)&c, 1, 0xFFFF);
 }
 
-char debug_uart_getchar(void)
+char debug_uart_blocking_getchar(void)
 {
-	char c;
-	HAL_UART_Receive(&UartHandle, (uint8_t *)&c, 1, 0xFFFF);
-	return c;
+	// This is the only place where the UART control register is being modified.
+	// A critical section will be enough
+	hacs_enter_critical();
+	__HAL_UART_CLEAR_OREFLAG(&UartHandle);
+	hacs_exit_critical();
+
+	xSemaphoreTake(rx_sem, portMAX_DELAY);
+	return buffered_char;
 }
 
-int debug_uart_inpstat(void)
+int debug_uart_rxne(void)
 {
 	return (USART2->SR & USART_SR_RXNE);
+}
+
+// The only IRQ enabled is RXNE
+void USART2_IRQHandler(void)
+{
+	static portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+	buffered_char = USART2->DR;
+	xSemaphoreGiveFromISR(rx_sem, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }

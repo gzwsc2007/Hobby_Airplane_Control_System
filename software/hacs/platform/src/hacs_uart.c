@@ -79,7 +79,7 @@ int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size,
 
   // check if the bus is already in use
   if (uart_locks[bus] == BUS_IN_USE) {
-    return HACS_ERR_ALREADY_IN_USE;
+    return -HACS_ERR_ALREADY_IN_USE;
   }
   uart_locks[bus] = BUS_IN_USE;
 

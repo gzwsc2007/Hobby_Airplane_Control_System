@@ -81,7 +81,7 @@ int bmp085_early_init(void) {
 int bmp085_request_sample(float *p_alt, int16_t *p_temp, bmp085_cb_t done_cb) {
   // Check for locking
   if (sample_lock == SAMPLE_IN_PROGRESS) {
-    return HACS_ERR_ALREADY_IN_USE;
+    return -HACS_ERR_ALREADY_IN_USE;
   }
 
   singleshot_done_cb = done_cb;

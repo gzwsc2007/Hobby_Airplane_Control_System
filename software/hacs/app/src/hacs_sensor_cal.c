@@ -29,7 +29,7 @@ int hacs_cal_mag_apply(float32_t inx, float32_t iny, float32_t inz,
     *outx = inx;
     *outy = iny;
     *outz = inz;
-    return HACS_CAL_INVALID;
+    return -HACS_CAL_INVALID;
   }
 
   arm_mat_add_f32(&in_vect, &hard_iron_matrix, &inter_vect);

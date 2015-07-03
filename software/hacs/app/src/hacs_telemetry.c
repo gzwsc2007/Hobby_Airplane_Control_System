@@ -127,7 +127,7 @@ int hacs_telem_send_pfd(float roll, float pitch, float yaw,
   const tx_type_t type = TELEM_TX_PFD;
 
   if (pfd_struct_busy) {
-    return HACS_ERR_ALREADY_IN_USE;
+    return -HACS_ERR_ALREADY_IN_USE;
   }
   pfd_struct_busy = 1;
 
@@ -149,7 +149,7 @@ int hacs_telem_send_navd(int32_t latitude, int32_t longitude, uint16_t speed,
   const tx_type_t type = TELEM_TX_NAVD;
 
   if (navd_struct_busy) {
-    return HACS_ERR_ALREADY_IN_USE;
+    return -HACS_ERR_ALREADY_IN_USE;
   }
   navd_struct_busy = 1;
 
@@ -169,7 +169,7 @@ int hacs_telem_send_magcal(int16_t magx, int16_t magy, int16_t magz) {
   const tx_type_t type = TELEM_TX_MAGCAL;
 
   if (magcal_struct_busy) {
-    return HACS_ERR_ALREADY_IN_USE;
+    return -HACS_ERR_ALREADY_IN_USE;
   }
   magcal_struct_busy = 1;
 

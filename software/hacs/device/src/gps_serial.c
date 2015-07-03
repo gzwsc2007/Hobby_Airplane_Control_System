@@ -103,7 +103,7 @@ static int gps_parse_string(char *s, gps_data_t *g) {
 
   // determine the format of the string (can be used to extend to other format)
   if (strncmp(s, "$GPRMC", 6)) {
-    return HACS_GPS_FORMOT_NOT_SUPPORTED;
+    return -HACS_GPS_FORMAT_NOT_SUPPORTED;
   }
 
   s += 7;

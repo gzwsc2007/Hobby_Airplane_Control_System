@@ -116,10 +116,10 @@ static int nrf24_recv(uint8_t *rbuf, uint8_t *plen) {
     if (*plen <= NRF24_MAX_MESSAGE_LEN) {
       nrf24_burst_read(NRF24_COMMAND_R_RX_PAYLOAD, rbuf, *plen);
     } else {
-      return HACS_NRF24_RX_INVALID_LENGTH;
+      return -HACS_NRF24_RX_INVALID_LENGTH;
     }
   } else {
-    return HACS_NRF24_RX_NOT_READY;
+    return -HACS_NRF24_RX_NOT_READY;
   }
 
   return HACS_NO_ERROR;
@@ -256,7 +256,7 @@ int nrf24_send(uint8_t *data, uint8_t len, uint8_t ack_cmd) {
   if (nrf24_status & NRF24_TX_DS) {
     return HACS_NO_ERROR;
   } else {
-    return HACS_NRF24_TX_FAILED;
+    return -HACS_NRF24_TX_FAILED;
   }
 }
 

@@ -315,6 +315,64 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
   }
 }
 
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
+{
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+  if(htim_base->Instance == TIM1)
+  {
+    // I am too lazy to enable GPIO clocks one by one. Just assume that
+    // all the GPIO clocks are already enabled.
+    __TIM1_CLK_ENABLE();
+
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+
+    GPIO_InitStruct.Pin = TIM1_CHAN1_PIN;
+    GPIO_InitStruct.Alternate = TIM1_CHAN1_AF;
+    HAL_GPIO_Init(TIM1_CHAN1_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = TIM1_CHAN2_PIN;
+    GPIO_InitStruct.Alternate = TIM1_CHAN2_AF;
+    HAL_GPIO_Init(TIM1_CHAN2_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = TIM1_CHAN3_PIN;
+    GPIO_InitStruct.Alternate = TIM1_CHAN3_AF;
+    HAL_GPIO_Init(TIM1_CHAN3_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = TIM1_CHAN4_PIN;
+    GPIO_InitStruct.Alternate = TIM1_CHAN4_AF;
+    HAL_GPIO_Init(TIM1_CHAN4_PORT, &GPIO_InitStruct);
+  }
+  else if (htim_base->Instance == TIM3)
+  {
+    // I am too lazy to enable GPIO clocks one by one. Just assume that
+    // all the GPIO clocks are already enabled.
+    __TIM3_CLK_ENABLE();
+
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+
+    GPIO_InitStruct.Pin = TIM3_CHAN1_PIN;
+    GPIO_InitStruct.Alternate = TIM3_CHAN1_AF;
+    HAL_GPIO_Init(TIM3_CHAN1_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = TIM3_CHAN2_PIN;
+    GPIO_InitStruct.Alternate = TIM3_CHAN2_AF;
+    HAL_GPIO_Init(TIM3_CHAN2_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = TIM3_CHAN3_PIN;
+    GPIO_InitStruct.Alternate = TIM3_CHAN3_AF;
+    HAL_GPIO_Init(TIM3_CHAN3_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = TIM3_CHAN4_PIN;
+    GPIO_InitStruct.Alternate = TIM3_CHAN4_AF;
+    HAL_GPIO_Init(TIM3_CHAN4_PORT, &GPIO_InitStruct);
+  }
+}
+
 /**
   * @}
   */

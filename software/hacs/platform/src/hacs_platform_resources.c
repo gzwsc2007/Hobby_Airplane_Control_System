@@ -43,3 +43,10 @@ const IRQn_Type hacs_uart_rx_dma_irq[HACS_NUM_UART_PERIPH] = {
 	[HACS_UART_MPU6050] = DMA2_Stream1_IRQn,
 	[HACS_UART_GPS] = DMA2_Stream2_IRQn,
 };
+
+// Revise this table to allocate TIM peripherals
+TIM_TypeDef* const hacs_tim_instances[HACS_NUM_TIMER_PERIPH] = {
+	[HACS_BASIC_TIMER] = TIM5, // This has to be a 32-bit counter
+	[HACS_PWM_TIMER_0] = TIM1,
+	[HACS_PWM_TIMER_1] = TIM3,
+};

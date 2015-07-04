@@ -13,6 +13,7 @@
 #include "mpu6050_serial.h"
 #include "bmp085.h"
 #include "hacs_sensor_sched.h"
+#include "hacs_timer.h"
 
 extern uint8_t g_sensor_log_enable;
 
@@ -51,6 +52,10 @@ static uint8_t bmp_done;
 static void bmp_cb(int ret) {
   bmp_retval = ret;
   bmp_done = 1;
+}
+
+static void timer_cb(void) {
+  printf("tim!\r\n");
 }
 
 int hacs_console_cmd_dispatch(char *buf)
@@ -175,6 +180,45 @@ int hacs_console_cmd_dispatch(char *buf)
     mpu6050_stop_parsing();
   */} else if (!strcmp(buf, "sensor log")) {
     g_sensor_log_enable = !g_sensor_log_enable;
+  } else if (!strcmp(buf, "tim ")) {
+    buf += sizeof("tim ");
+    uint32_t us = strtoul(buf, NULL, 10);
+    timer_set_update_cb(HACS_BASIC_TIMER, timer_cb);
+    timer_set_period(HACS_BASIC_TIMER, us);
+    timer_reset_n_go(HACS_BASIC_TIMER);
+
+    while(!debug_uart_rxne()) vTaskDelay(MS_TO_TICKS(50));
+
+    timer_stop(HACS_BASIC_TIMER);
+
+  } else if (!strcmp(buf, "pwm ")) {
+    buf += sizeof("pwm ");
+    float percent = (float)strtoul(buf, NULL, 10) / 100.0;
+    timer_set_period(HACS_PWM_TIMER_0, 2000);
+    timer_set_period(HACS_PWM_TIMER_1, 2000);
+
+    timer_set_pwm_duty(HACS_PWM_CHAN_1, percent);
+    timer_set_pwm_duty(HACS_PWM_CHAN_2, percent);
+    timer_set_pwm_duty(HACS_PWM_CHAN_3, percent);
+    timer_set_pwm_duty(HACS_PWM_CHAN_4, percent);
+    timer_set_pwm_duty(HACS_PWM_CHAN_5, percent);
+    timer_set_pwm_duty(HACS_PWM_CHAN_6, percent);
+    timer_set_pwm_duty(HACS_PWM_CHAN_7, percent);
+    timer_set_pwm_duty(HACS_PWM_CHAN_8, percent);
+
+    timer_start_pwm(HACS_PWM_CHAN_1);
+    timer_start_pwm(HACS_PWM_CHAN_2);
+    timer_start_pwm(HACS_PWM_CHAN_3);
+    timer_start_pwm(HACS_PWM_CHAN_4);
+    timer_start_pwm(HACS_PWM_CHAN_5);
+    timer_start_pwm(HACS_PWM_CHAN_6);
+    timer_start_pwm(HACS_PWM_CHAN_7);
+    timer_start_pwm(HACS_PWM_CHAN_8);
+
+    while(!debug_uart_rxne()) vTaskDelay(MS_TO_TICKS(50));
+
+    timer_stop(HACS_PWM_TIMER_0);
+    timer_stop(HACS_PWM_TIMER_1);
   }
 
   return retval;

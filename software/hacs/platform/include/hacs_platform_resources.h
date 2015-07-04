@@ -40,6 +40,29 @@ typedef enum {
   HACS_UART_GPS,
 } hacs_uart_t;
 
+/*** TIMER ***/
+#define HACS_NUM_TIMER_PERIPH			(3)
+extern TIM_TypeDef* const hacs_tim_instances[HACS_NUM_TIMER_PERIPH];
+
+typedef enum {
+  HACS_BASIC_TIMER,
+  HACS_PWM_TIMER_0,
+  HACS_PWM_TIMER_1,
+} hacs_timer_t;
+
+// The below 8 channels should correspond to the channel numbers imprinted
+// on the HACS shield.
+typedef enum {
+  HACS_PWM_CHAN_1 = 0,
+  HACS_PWM_CHAN_2,
+  HACS_PWM_CHAN_3,
+  HACS_PWM_CHAN_4,
+  HACS_PWM_CHAN_5,
+  HACS_PWM_CHAN_6,
+  HACS_PWM_CHAN_7,
+  HACS_PWM_CHAN_8,
+} hacs_pwm_chan_t;
+
 /*** GPIO ***/
 
 // The CS pin for SPI
@@ -134,5 +157,32 @@ typedef enum {
 #define I2C1_SCL_PORT                   GPIOB
 #define I2C1_SCL_PIN                    GPIO_PIN_8
 #define I2C1_SCL_AF                     GPIO_AF4_I2C1
+
+/* Definition for TIM PWM output pins */
+#define TIM1_CHAN1_PORT                 GPIOA
+#define TIM1_CHAN1_PIN                  GPIO_PIN_8
+#define TIM1_CHAN1_AF                   GPIO_AF1_TIM1
+#define TIM1_CHAN2_PORT                 GPIOA
+#define TIM1_CHAN2_PIN                  GPIO_PIN_9
+#define TIM1_CHAN2_AF                   GPIO_AF1_TIM1
+#define TIM1_CHAN3_PORT                 GPIOA
+#define TIM1_CHAN3_PIN                  GPIO_PIN_10
+#define TIM1_CHAN3_AF                   GPIO_AF1_TIM1
+#define TIM1_CHAN4_PORT                 GPIOA
+#define TIM1_CHAN4_PIN                  GPIO_PIN_11
+#define TIM1_CHAN4_AF                   GPIO_AF1_TIM1
+
+#define TIM3_CHAN1_PORT                 GPIOA
+#define TIM3_CHAN1_PIN                  GPIO_PIN_6
+#define TIM3_CHAN1_AF                   GPIO_AF2_TIM3
+#define TIM3_CHAN2_PORT                 GPIOA
+#define TIM3_CHAN2_PIN                  GPIO_PIN_7
+#define TIM3_CHAN2_AF                   GPIO_AF2_TIM3
+#define TIM3_CHAN3_PORT                 GPIOB
+#define TIM3_CHAN3_PIN                  GPIO_PIN_0
+#define TIM3_CHAN3_AF                   GPIO_AF2_TIM3
+#define TIM3_CHAN4_PORT                 GPIOB
+#define TIM3_CHAN4_PIN                  GPIO_PIN_1
+#define TIM3_CHAN4_AF                   GPIO_AF2_TIM3
 
 #endif

@@ -14,6 +14,7 @@
 #include "gps_serial.h"
 #include "mpu6050_serial.h"
 #include "bmp085.h"
+#include "hacs_timer.h"
 
 #include "hacs_telemetry.h"
 
@@ -70,6 +71,11 @@ void hacs_platform_init(void)
                      HACS_UART_NOT_USE_TX_DMA, HACS_UART_USE_RX_DMA) != 0) {
     printf("Error in MPU6050 uart_init!\r\n");
   }
+
+  /* Init TIM */
+  timer_init(HACS_BASIC_TIMER, HACS_TIMER_MODE_COUNTING);
+  timer_init(HACS_PWM_TIMER_0, HACS_TIMER_MODE_PWM);
+  timer_init(HACS_PWM_TIMER_1, HACS_TIMER_MODE_PWM);
 
   // Wait for devices to settle
   delay_us(1000);

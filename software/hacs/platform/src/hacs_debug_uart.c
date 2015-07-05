@@ -43,9 +43,10 @@ char debug_uart_blocking_getchar(void)
 	return buffered_char;
 }
 
-int debug_uart_rxne(void)
+int debug_uart_wait_rxne(void)
 {
-	return (USART2->SR & USART_SR_RXNE);
+	debug_uart_blocking_getchar();
+	return 1;
 }
 
 // The only IRQ enabled is RXNE

@@ -73,7 +73,7 @@ int hacs_console_cmd_dispatch(char *buf)
     int16_t magX = 0;
     int16_t magY = 0;
     int16_t magZ = 0;
-    while (!debug_uart_rxne()) {
+    while (!debug_uart_wait_rxne()) {
       hmc5883_update_xyz(&magX, &magY, &magZ);
       printf("%hd %hd %hd\r\n", magX, magY, magZ);
       vTaskDelay(MS_TO_TICKS(150));
@@ -89,7 +89,7 @@ int hacs_console_cmd_dispatch(char *buf)
     uint8_t buf[128];
     gps_ht = 0;
     hacs_uart_start_listening(HACS_UART_GPS, (uint32_t)buf, 128, gps_ht_cb, gps_tc_cb);
-    while (!debug_uart_rxne()) {
+    while (!debug_uart_wait_rxne()) {
       while (!gps_ht);
       gps_ht = 0;
       gps_tc = 0;
@@ -108,7 +108,7 @@ int hacs_console_cmd_dispatch(char *buf)
     xQueueHandle q = gps_get_msg_queue();
 
     gps_start_parsing();
-    while (!debug_uart_rxne()) {
+    while (!debug_uart_wait_rxne()) {
       xQueueReceive(q, &temp, portMAX_DELAY);
       printf("lat: %d long: %d speed: %d course: %d\r\n",
              temp.latitude, temp.longitude, temp.speed, temp.course);
@@ -119,7 +119,7 @@ int hacs_console_cmd_dispatch(char *buf)
     uint8_t buf[128];
     mpu_ht = 0;
     hacs_uart_start_listening(HACS_UART_MPU6050, (uint32_t)buf, 128, mpu_ht_cb, mpu_tc_cb);
-    while (!debug_uart_rxne()) {
+    while (!debug_uart_wait_rxne()) {
       while (!mpu_ht);
       mpu_ht = 0;
       mpu_tc = 0;
@@ -137,7 +137,7 @@ int hacs_console_cmd_dispatch(char *buf)
     xQueueHandle q = mpu6050_get_msg_queue();
 
     mpu6050_start_parsing(MPU_DRIVER_CONTINUOUS_MODE);
-    while (!debug_uart_rxne()) {
+    while (!debug_uart_wait_rxne()) {
       xQueueReceive(q, &temp, portMAX_DELAY);
       printf("ro: %d pi: %d ya: %d\r\n",
              (int16_t)temp.roll, (int16_t)temp.pitch, (int16_t)temp.yaw);
@@ -180,19 +180,19 @@ int hacs_console_cmd_dispatch(char *buf)
     mpu6050_stop_parsing();
   */} else if (!strcmp(buf, "sensor log")) {
     g_sensor_log_enable = !g_sensor_log_enable;
-  } else if (!strcmp(buf, "tim ")) {
-    buf += sizeof("tim ");
+  } else if (!memcmp(buf, "tim ", sizeof("tim ")-1)) {
+    buf += sizeof("tim ")-1;
     uint32_t us = strtoul(buf, NULL, 10);
     timer_set_update_cb(HACS_BASIC_TIMER, timer_cb);
     timer_set_period(HACS_BASIC_TIMER, us);
     timer_reset_n_go(HACS_BASIC_TIMER);
 
-    while(!debug_uart_rxne()) vTaskDelay(MS_TO_TICKS(50));
+    while(!debug_uart_wait_rxne()) vTaskDelay(MS_TO_TICKS(50));
 
     timer_stop(HACS_BASIC_TIMER);
 
-  } else if (!strcmp(buf, "pwm ")) {
-    buf += sizeof("pwm ");
+  } else if (!memcmp(buf, "pwm ", sizeof("pwm ")-1)) {
+    buf += sizeof("pwm ")-1;
     float percent = (float)strtoul(buf, NULL, 10) / 100.0;
     timer_set_period(HACS_PWM_TIMER_0, 2000);
     timer_set_period(HACS_PWM_TIMER_1, 2000);
@@ -215,7 +215,7 @@ int hacs_console_cmd_dispatch(char *buf)
     timer_start_pwm(HACS_PWM_CHAN_7);
     timer_start_pwm(HACS_PWM_CHAN_8);
 
-    while(!debug_uart_rxne()) vTaskDelay(MS_TO_TICKS(50));
+    while(!debug_uart_wait_rxne()) vTaskDelay(MS_TO_TICKS(50));
 
     timer_stop(HACS_PWM_TIMER_0);
     timer_stop(HACS_PWM_TIMER_1);

@@ -4,6 +4,6 @@
 int debug_uart_init(uint32_t baud);
 int debug_uart_putchar(char c);
 char debug_uart_blocking_getchar(void);
-int debug_uart_rxne(void);
+int debug_uart_wait_rxne(void);
 
 #endif

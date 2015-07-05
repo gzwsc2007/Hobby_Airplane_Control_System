@@ -371,6 +371,10 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
     GPIO_InitStruct.Alternate = TIM3_CHAN4_AF;
     HAL_GPIO_Init(TIM3_CHAN4_PORT, &GPIO_InitStruct);
   }
+  else if (htim_base->Instance == TIM5)
+  {
+    __TIM5_CLK_ENABLE();
+  }
 }
 
 /**

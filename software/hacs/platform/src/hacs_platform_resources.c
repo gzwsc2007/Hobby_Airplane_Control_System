@@ -50,3 +50,14 @@ TIM_TypeDef* const hacs_tim_instances[HACS_NUM_TIMER_PERIPH] = {
 	[HACS_PWM_TIMER_0] = TIM1,
 	[HACS_PWM_TIMER_1] = TIM3,
 };
+
+// Revise this table to change mapping between RC input channels and GPIO pins.
+// Note: Channel numbers correspond to those imprinted on the HACS board.
+const gpio_port_pin_t rc_chan_to_gpio_map[HACS_NUM_RC_CHAN] = {
+  [RC_CHAN_THROTTLE] = {RC_CHAN1_PORT, RC_CHAN1_PIN},
+  [RC_CHAN_AILERON] = {RC_CHAN2_PORT, RC_CHAN2_PIN},
+  [RC_CHAN_ELEVATOR] = {RC_CHAN3_PORT, RC_CHAN3_PIN},
+  [RC_CHAN_RUDDER] = {RC_CHAN4_PORT, RC_CHAN4_PIN},
+  [RC_CHAN_AUX_0] = {RC_CHAN5_PORT, RC_CHAN5_PIN},
+  [RC_CHAN_AUX_1] = {RC_CHAN6_PORT, RC_CHAN6_PIN},
+};

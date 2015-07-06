@@ -14,6 +14,7 @@
 #include "bmp085.h"
 #include "hacs_sensor_sched.h"
 #include "hacs_timer.h"
+#include "rc_receiver.h"
 
 extern uint8_t g_sensor_log_enable;
 
@@ -219,6 +220,14 @@ int hacs_console_cmd_dispatch(char *buf)
 
     timer_stop(HACS_PWM_TIMER_0);
     timer_stop(HACS_PWM_TIMER_1);
+
+  } else if (!strcmp(buf, "rc")) {
+    printf("throttle: %d\r\n", rc_recvr_read_chan_raw(RC_CHAN_THROTTLE));
+    printf("aileron: %d\r\n", rc_recvr_read_chan_raw(RC_CHAN_AILERON));
+    printf("elevator: %d\r\n", rc_recvr_read_chan_raw(RC_CHAN_ELEVATOR));
+    printf("rudder: %d\r\n", rc_recvr_read_chan_raw(RC_CHAN_RUDDER));
+    printf("aux0: %d\r\n", rc_recvr_read_chan_raw(RC_CHAN_AUX_0));
+    printf("aux1: %d\r\n", rc_recvr_read_chan_raw(RC_CHAN_AUX_1));
   }
 
   return retval;

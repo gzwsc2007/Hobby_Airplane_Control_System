@@ -5,6 +5,10 @@
 
 typedef GPIO_TypeDef* gpio_port_t;
 typedef uint16_t gpio_pin_t;
+typedef struct {
+  gpio_port_t port;
+  gpio_pin_t  pin;
+} gpio_port_pin_t;
 
 /*** SPI ***/
 #define HACS_NUM_SPI_PERIPH       (2)
@@ -62,6 +66,19 @@ typedef enum {
   HACS_PWM_CHAN_7,
   HACS_PWM_CHAN_8,
 } hacs_pwm_chan_t;
+
+/*** RC Receiver ***/
+typedef enum {
+  RC_CHAN_THROTTLE = 0,
+  RC_CHAN_AILERON,
+  RC_CHAN_ELEVATOR,
+  RC_CHAN_RUDDER,
+  RC_CHAN_AUX_0,
+  RC_CHAN_AUX_1,
+
+  HACS_NUM_RC_CHAN,
+} hacs_rc_chan_t;
+extern const gpio_port_pin_t rc_chan_to_gpio_map[HACS_NUM_RC_CHAN];
 
 /*** GPIO ***/
 
@@ -184,5 +201,22 @@ typedef enum {
 #define TIM3_CHAN4_PORT                 GPIOB
 #define TIM3_CHAN4_PIN                  GPIO_PIN_1
 #define TIM3_CHAN4_AF                   GPIO_AF2_TIM3
+
+/* 
+ * Definition for receiver channel pins.
+ * Channel numbers correspond to those imprinted on the HACS board
+ */
+#define RC_CHAN1_PORT                   GPIOC
+#define RC_CHAN1_PIN                    GPIO_PIN_9
+#define RC_CHAN2_PORT                   GPIOC
+#define RC_CHAN2_PIN                    GPIO_PIN_8
+#define RC_CHAN3_PORT                   GPIOC
+#define RC_CHAN3_PIN                    GPIO_PIN_5
+#define RC_CHAN4_PORT                   GPIOA
+#define RC_CHAN4_PIN                    GPIO_PIN_12
+#define RC_CHAN5_PORT                   GPIOB
+#define RC_CHAN5_PIN                    GPIO_PIN_6
+#define RC_CHAN6_PORT                   GPIOB
+#define RC_CHAN6_PIN                    GPIO_PIN_2
 
 #endif

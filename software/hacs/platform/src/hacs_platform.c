@@ -15,7 +15,7 @@
 #include "mpu6050_serial.h"
 #include "bmp085.h"
 #include "hacs_timer.h"
-
+#include "rc_receiver.h"
 #include "hacs_telemetry.h"
 
 /* Platform static data */
@@ -87,6 +87,8 @@ void hacs_platform_init(void)
   bmp085_early_init();
 
   hacs_telemetry_early_init();
+
+  rc_recvr_init();
 }
 
 // Redirect putc to UART send

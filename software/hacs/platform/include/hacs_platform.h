@@ -12,6 +12,11 @@
 
 #define HACS_REQUIRES(__condition__, __label__) do { if (!(__condition__)) goto __label__; } while(0)
 
+// Assumed convention of RC signals
+#define RC_PWM_PERIOD_US     (20000UL) // 20ms
+#define RC_PWM_MAX_WIDTH_US  (2000UL) // 2ms
+#define RC_PWM_MIN_WIDTH_US  (1000UL) // 1ms
+
 extern uint8_t hacs_critical_ref_count;
 
 void hacs_platform_init(void);

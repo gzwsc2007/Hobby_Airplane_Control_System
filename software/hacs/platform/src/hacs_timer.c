@@ -134,6 +134,16 @@ int timer_set_pwm_duty(hacs_pwm_chan_t pwm, float percent)
   return HACS_NO_ERROR;
 }
 
+int timer_set_pwm_width_us(hacs_pwm_chan_t pwm, uint32_t us)
+{
+  hacs_timer_t tim = (pwm > HACS_PWM_CHAN_4) ? HACS_PWM_TIMER_1 : HACS_PWM_TIMER_0;
+  TIM_HandleTypeDef *htim = &tim_handles[tim];
+
+  __HAL_TIM_SetCompare(htim, pwm_chan_to_tim_chan[pwm], us);
+
+  return HACS_NO_ERROR;
+}
+
 int timer_start_pwm(hacs_pwm_chan_t pwm)
 {
   hacs_timer_t tim = (pwm > HACS_PWM_CHAN_4) ? HACS_PWM_TIMER_1 : HACS_PWM_TIMER_0;

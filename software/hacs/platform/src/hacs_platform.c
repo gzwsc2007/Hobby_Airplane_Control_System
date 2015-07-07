@@ -17,6 +17,7 @@
 #include "hacs_timer.h"
 #include "rc_receiver.h"
 #include "hacs_telemetry.h"
+#include "actuator.h"
 
 /* Platform static data */
 uint8_t hacs_critical_ref_count = 0; // Critical section reference count
@@ -89,6 +90,7 @@ void hacs_platform_init(void)
   hacs_telemetry_early_init();
 
   rc_recvr_init();
+  actuator_init();
 }
 
 // Redirect putc to UART send

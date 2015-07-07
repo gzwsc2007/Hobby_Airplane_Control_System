@@ -61,3 +61,15 @@ const gpio_port_pin_t rc_chan_to_gpio_map[HACS_NUM_RC_CHAN] = {
   [RC_CHAN_AUX_0] = {RC_CHAN5_PORT, RC_CHAN5_PIN},
   [RC_CHAN_AUX_1] = {RC_CHAN6_PORT, RC_CHAN6_PIN},
 };
+
+// Revise this table to change the mapping between actuator output channels and pwm channels
+const hacs_pwm_chan_t actuator_to_pwm_map[HACS_NUM_ACTUATOR] = {
+	[HACS_ACTUATOR_THROTTLE] = HACS_PWM_CHAN_8,
+	[HACS_ACTUATOR_AILERON] = HACS_PWM_CHAN_7,
+	[HACS_ACTUATOR_ELEVATOR] = HACS_PWM_CHAN_6,
+	[HACS_ACTUATOR_RUDDER] = HACS_PWM_CHAN_5,
+	[HACS_ACTUATOR_AUX_0] = HACS_PWM_CHAN_4,
+	[HACS_ACTUATOR_AUX_1] = HACS_PWM_CHAN_3,
+	[HACS_ACTUATOR_AUX_2] = HACS_PWM_CHAN_2,
+	[HACS_ACTUATOR_AUX_3] = HACS_PWM_CHAN_1,
+};

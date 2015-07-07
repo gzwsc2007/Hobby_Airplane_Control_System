@@ -23,6 +23,7 @@ uint32_t timer_get_us(hacs_timer_t tim); // return microseconds since timer star
 int timer_stop(hacs_timer_t tim);
 
 int timer_set_pwm_duty(hacs_pwm_chan_t pwm, float percent);
+int timer_set_pwm_width_us(hacs_pwm_chan_t pwm, uint32_t us);
 int timer_start_pwm(hacs_pwm_chan_t pwm);
 
 #endif

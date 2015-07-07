@@ -65,6 +65,8 @@ typedef enum {
   HACS_PWM_CHAN_6,
   HACS_PWM_CHAN_7,
   HACS_PWM_CHAN_8,
+
+  HACS_NUM_PWM_CHAN,
 } hacs_pwm_chan_t;
 
 /*** RC Receiver ***/
@@ -79,6 +81,21 @@ typedef enum {
   HACS_NUM_RC_CHAN,
 } hacs_rc_chan_t;
 extern const gpio_port_pin_t rc_chan_to_gpio_map[HACS_NUM_RC_CHAN];
+
+/*** Actuator ***/
+typedef enum {
+  HACS_ACTUATOR_THROTTLE = 0,
+  HACS_ACTUATOR_AILERON,
+  HACS_ACTUATOR_ELEVATOR,
+  HACS_ACTUATOR_RUDDER,
+  HACS_ACTUATOR_AUX_0,
+  HACS_ACTUATOR_AUX_1,
+  HACS_ACTUATOR_AUX_2,
+  HACS_ACTUATOR_AUX_3,
+
+  HACS_NUM_ACTUATOR,
+} hacs_actuator_t;
+extern const hacs_pwm_chan_t actuator_to_pwm_map[HACS_NUM_ACTUATOR];
 
 /*** GPIO ***/
 

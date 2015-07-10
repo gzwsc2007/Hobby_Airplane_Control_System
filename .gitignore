@@ -3,10 +3,11 @@
 /pcb
 /result
 /software/third_party/CMSIS/Documentation
-/project/IAR/Debug
+/project/HACS_app/IAR/Debug
 /project/STM32CubeMX
 /project/Sublime
-
+/project/Watchdog_Micro/Watchdog_Micro/Debug
+/project/HACS_bootloader/IAR/Debug
 
 # C ignore
 

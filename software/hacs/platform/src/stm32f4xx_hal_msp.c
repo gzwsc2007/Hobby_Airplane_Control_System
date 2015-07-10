@@ -143,11 +143,13 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
     USART6_RX_GPIO_CLK_ENABLE();
   
     /* USART6 GPIO Configuration */
+    /* TODO: Temproray fix to disable USART6 TX pin. I made a mistake to
+       swap the TX and RX pin for the MPU6050 module... */
     GPIO_InitStruct.Pin = USART6_TX_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT; //GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL; //GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-    GPIO_InitStruct.Alternate = USART6_TX_AF;
+    GPIO_InitStruct.Alternate = 0; //USART6_TX_AF;
     HAL_GPIO_Init(USART6_TX_PORT, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = USART6_RX_PIN;

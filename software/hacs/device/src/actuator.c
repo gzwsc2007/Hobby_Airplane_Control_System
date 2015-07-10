@@ -39,7 +39,7 @@ int actuator_set_output(hacs_actuator_t chan, int32_t val)
 {
   int32_t width;
 
-  width = (val/2) + (int32_t)PWM_MIDSCALE_WIDTH_US;
+  width = val + (int32_t)PWM_MIDSCALE_WIDTH_US;
   if (width < (int32_t)RC_PWM_MIN_WIDTH_US) width = (int32_t)RC_PWM_MIN_WIDTH_US;
   else if (width > (int32_t)RC_PWM_MAX_WIDTH_US) width = (int32_t)RC_PWM_MAX_WIDTH_US;
 

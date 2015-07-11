@@ -1,7 +1,4 @@
-#include "stm32f411xe.h"
-#include "core_cm4.h"
-
-#define HACS_APP_BASE_ADDR    ((uint32_t*)0x0800C000)
+#include "hacs_platform.h"
 
 static void jump_to_app(uint32_t *base_addr)
 {
@@ -20,7 +17,7 @@ static void jump_to_app(uint32_t *base_addr)
 
 int main(void)
 {
-  jump_to_app(HACS_APP_BASE_ADDR);
+  jump_to_app((uint32_t*)HACS_APP_BASE_ADDR);
 
   while(1); // should never reach here
 }

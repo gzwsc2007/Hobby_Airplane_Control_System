@@ -3,6 +3,7 @@
 #include "hacs_platform.h"
 #include "hacs_i2c_master.h"
 #include "bmp085.h"
+#include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
 

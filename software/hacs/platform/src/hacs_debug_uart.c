@@ -2,6 +2,8 @@
 #include "hacs_debug_uart.h"
 #include "stm32f4xx_hal.h"
 #include "hacs_platform_resources.h"
+#include "FreeRTOSConfig.h"
+#include "FreeRTOS.h"
 #include "semphr.h"
 
 static UART_HandleTypeDef UartHandle;

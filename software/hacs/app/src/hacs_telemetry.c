@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "hacs_platform.h"
+#include "FreeRTOS.h"
 #include "queue.h"
 #include "hacs_telemetry.h"
 #include "nrf24l01.h"

@@ -2,6 +2,7 @@
 #include <string.h>
 #include "hacs_platform.h"
 #include "hacs_uart.h"
+#include "FreeRTOS.h"
 #include "gps_serial.h"
 
 #define GPS_RAW_BUF_LEN     128

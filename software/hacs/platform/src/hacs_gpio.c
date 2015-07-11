@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "hacs_platform.h"
 #include "hacs_platform_resources.h"
+#include "FreeRTOSConfig.h"
+#include "FreeRTOS.h"
 #include "hacs_gpio.h"
 #include "hacs_error_codes.h"
 

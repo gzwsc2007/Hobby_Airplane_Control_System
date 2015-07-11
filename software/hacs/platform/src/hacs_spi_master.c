@@ -3,6 +3,7 @@
 #include "hacs_spi_master.h"
 #include "stm32f4xx_hal.h"
 #include "hacs_gpio.h"
+#include "FreeRTOS.h"
 #include "semphr.h"
 
 #define SPI_OP_TIMEOUT_MS   (100)

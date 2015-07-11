@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "hacs_platform.h"
 #include "hacs_platform_resources.h"
+#include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
 #include "hacs_spi_master.h"

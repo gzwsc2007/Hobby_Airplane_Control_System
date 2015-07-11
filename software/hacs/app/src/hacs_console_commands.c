@@ -5,6 +5,8 @@
 #include "hacs_spi_master.h"
 #include "hacs_uart.h"
 #include "hacs_debug_uart.h"
+#include "FreeRTOSConfig.h"
+#include "FreeRTOS.h"
 #include "queue.h"
 
 #include "hmc5883.h"

@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "hacs_platform.h"
 #include "hacs_uart.h"
+#include "FreeRTOS.h"
 #include "mpu6050_serial.h"
 
 #define MPU_RAW_BUF_LEN     80

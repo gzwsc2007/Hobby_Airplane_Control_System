@@ -1,5 +1,6 @@
 #include "hacs_platform.h"
 #include "hacs_i2c_master.h"
+#include "FreeRTOS.h"
 #include "semphr.h"
 
 #define I2C_OP_TIMEOUT_MS   (100)

@@ -298,6 +298,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\third_party\CMSIS\Device\ST\STM32F4xx\Include</state>
+          <state>D:\Anson\Documents\GitHub\Hobby_Airplane_Control_System\software\hacs\platform\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -593,7 +594,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state></state>
+          <state>HACS_bootloader.srec</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>

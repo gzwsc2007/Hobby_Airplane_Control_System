@@ -1,6 +1,7 @@
 #include "hacs_platform.h"
 #include "hacs_timer.h"
 #include "stm32f4xx_hal.h"
+#include "FreeRTOSConfig.h"
 
 #define TIMER_RESOLUTION_FREQ   (1000000UL) // equivalent to 1/TIMER_RESOLUTION_SECONDS
 

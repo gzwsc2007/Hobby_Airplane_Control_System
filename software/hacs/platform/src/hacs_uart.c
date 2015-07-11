@@ -2,6 +2,7 @@
 #include "hacs_platform_resources.h"
 #include "hacs_uart.h"
 #include "stm32f4xx_hal.h"
+#include "FreeRTOSConfig.h"
 
 #define UART_OP_TIMEOUT_MS   (HAL_MAX_DELAY)
 

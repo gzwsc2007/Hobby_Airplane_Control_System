@@ -2,8 +2,10 @@
 #include <math.h>
 #include "hacs_platform.h"
 #include "hacs_sensor_sched.h"
+#include "FreeRTOS.h"
 #include "queue.h"
 #include "semphr.h"
+#include "task.h"
 
 #include "mpu6050_serial.h"
 #include "gps_serial.h"

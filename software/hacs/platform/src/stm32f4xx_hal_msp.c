@@ -49,6 +49,7 @@
 #include "stm32f4xx_hal.h"
 #include "hacs_platform.h"
 #include "hacs_platform_resources.h"
+#include "FreeRTOSConfig.h"
 
 /** @addtogroup STM32F4xx_HAL_Driver
   * @{

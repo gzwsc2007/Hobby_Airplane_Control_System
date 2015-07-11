@@ -3,6 +3,7 @@
 #include "rc_receiver.h"
 #include "hacs_timer.h"
 #include "hacs_gpio.h"
+#include "FreeRTOS.h"
 #include "semphr.h"
 
 #define FIRST_CHANNEL   RC_CHAN_THROTTLE

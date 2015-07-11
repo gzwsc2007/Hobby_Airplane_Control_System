@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>2355120003</fileChecksum>
+  <fileChecksum>2485041485</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
@@ -34,6 +34,8 @@
       <file>$TOOLKIT_DIR$\inc\c\cmsis_iar.h</file>
       <file>$TOOLKIT_DIR$\inc\c\intrinsics.h</file>
       <file>$PROJ_DIR$\..\..\..\result\HACS_bootloader\Debug\List\bootloader_main.lst</file>
+      <file>$PROJ_DIR$\..\..\..\software\hacs\platform\include\hacs_error_codes.h</file>
+      <file>$PROJ_DIR$\..\..\..\software\hacs\platform\include\hacs_platform.h</file>
       <file>$PROJ_DIR$\..\..\..\result\HACS_bootloader\Debug\List\system_stm32f4xx.lst</file>
       <file>$TOOLKIT_DIR$\lib\rt7M_tl.a</file>
       <file>$TOOLKIT_DIR$\lib\m7M_tlv.a</file>
@@ -65,11 +67,11 @@
       <inputs>
         <tool>
           <name>ICCARM</name>
-          <file> 22 3 18 7 11 10 15 12 16 13 4 25 26 2 1 8</file>
+          <file> 29 28 22 3 18 7 11 10 15 12 16 13 4 25 26 2 1 8</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 18 2 11 12 3 4 1 16 8 13 15 25 26 7 22 10</file>
+          <file> 2 11 18 12 28 3 4 1 16 22 8 13 15 25 26 7 29 10</file>
         </tool>
       </inputs>
     </file>
@@ -78,7 +80,7 @@
       <outputs>
         <tool>
           <name>ICCARM</name>
-          <file> 28 9</file>
+          <file> 30 9</file>
         </tool>
         <tool>
           <name>BICOMP</name>
@@ -101,7 +103,7 @@
       <inputs>
         <tool>
           <name>ILINK</name>
-          <file> 31 14 23 9 32 29 30 33</file>
+          <file> 33 14 23 9 34 31 32 35</file>
         </tool>
       </inputs>
     </file>

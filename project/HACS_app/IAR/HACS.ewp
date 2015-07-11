@@ -723,7 +723,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\stm32f411xe_flash.icf</state>
+          <state>$PROJ_DIR$\HACS_app_stm32f411xe_flash.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>

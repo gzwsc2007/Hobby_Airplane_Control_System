@@ -6,7 +6,7 @@
 /project/HACS_app/IAR/Debug
 /project/STM32CubeMX
 /project/Sublime
-/project/Watchdog_Micro/Watchdog_Micro/Debug
+/project/Watchdog_Micro/AVR_Studio/Watchdog_Micro/Debug
 /project/HACS_bootloader/IAR/Debug
 
 # C ignore

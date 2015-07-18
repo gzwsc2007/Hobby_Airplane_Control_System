@@ -7,11 +7,17 @@
 
 #define MS_TO_TICKS(ms)                 ((ms * configTICK_RATE_HZ + 999) / 1000)
 
+#define ALIGN_TO_WORD(addr)             (((addr) + 3) / 4 * 4) // Assume word size is 4
+
 #define HACS_REQUIRES(__condition__, __label__) do { if (!(__condition__)) goto __label__; } while(0)
 
-#define HACS_ENV_0_ADDR       ((uint32_t)0x08004000) // Sector 1
-#define HACS_ENV_1_ADDR       ((uint32_t)0x08008000) // Sector 2
+#define HACS_PSTORE_0_ADDR    ((uint32_t)0x08004000) // Sector 1
+#define HACS_PSTORE_0_SECTOR	(FLASH_SECTOR_1)
+#define HACS_PSTORE_1_ADDR    ((uint32_t)0x08008000) // Sector 2
+#define HACS_PSTORE_1_SECTOR	(FLASH_SECTOR_2)
 #define HACS_APP_BASE_ADDR    ((uint32_t)0x0800C000) // Sector 3
+
+#define HACS_PSTORE_BANK_SIZE ((uint32_t)1024)
 
 // Assumed convention of RC signals
 #define RC_PWM_PERIOD_US     (20000UL) // 20ms

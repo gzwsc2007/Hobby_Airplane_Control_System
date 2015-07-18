@@ -8,6 +8,7 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "task.h"
 
 #include "hmc5883.h"
 #include "nrf24l01.h"
@@ -17,6 +18,7 @@
 #include "hacs_sensor_sched.h"
 #include "hacs_timer.h"
 #include "rc_receiver.h"
+#include "hacs_pstore.h"
 
 extern uint8_t g_sensor_log_enable;
 
@@ -230,7 +232,17 @@ int hacs_console_cmd_dispatch(char *buf)
     printf("rudder: %d\r\n", rc_recvr_read_chan_raw(RC_CHAN_RUDDER));
     printf("aux0: %d\r\n", rc_recvr_read_chan_raw(RC_CHAN_AUX_0));
     printf("aux1: %d\r\n", rc_recvr_read_chan_raw(RC_CHAN_AUX_1));
+
+  } else if (!strcmp(buf, "pstore test")) {
+    uint8_t set_buf[] = {1,2,3,4,5,6,7,8};
+    uint8_t get_buf[sizeof(set_buf)];
+    retval = hacs_pstore_set(HACS_PSTORE_MAG_HARD_CAL, set_buf, sizeof(set_buf));
+    HACS_REQUIRES(retval >= 0, done);
+    retval = hacs_pstore_get(HACS_PSTORE_MAG_HARD_CAL, get_buf, sizeof(get_buf));
+    printf("get: %d %d %d %d %d %d %d %d\r\n", get_buf[0], get_buf[1], get_buf[2],
+           get_buf[3], get_buf[4], get_buf[5], get_buf[6], get_buf[7]);
   }
 
+done:
   return retval;
 }

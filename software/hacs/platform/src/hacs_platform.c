@@ -18,6 +18,8 @@
 #include "rc_receiver.h"
 #include "hacs_telemetry.h"
 #include "actuator.h"
+#include "hacs_crc.h"
+#include "hacs_pstore.h"
 
 /* Platform static data */
 uint8_t hacs_critical_ref_count = 0; // Critical section reference count
@@ -78,6 +80,9 @@ void hacs_platform_init(void)
   timer_init(HACS_PWM_TIMER_0, HACS_TIMER_MODE_PWM);
   timer_init(HACS_PWM_TIMER_1, HACS_TIMER_MODE_PWM);
 
+  /* Init CRC */
+  hacs_crc_init();
+
   // Wait for devices to settle
   delay_us(1000);
 
@@ -88,7 +93,7 @@ void hacs_platform_init(void)
   bmp085_early_init();
 
   hacs_telemetry_early_init();
-
+  hacs_pstore_init();
   rc_recvr_init();
   actuator_init();
 }

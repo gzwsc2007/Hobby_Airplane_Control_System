@@ -185,6 +185,9 @@
       <name>$PROJ_DIR$\..\..\..\software\hacs\app\src\hacs_pilot_cmd.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\software\hacs\app\src\hacs_pstore_layout.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\software\hacs\app\src\hacs_sensor_cal.c</name>
     </file>
     <file>
@@ -230,6 +233,9 @@
   <group>
     <name>platform</name>
     <file>
+      <name>$PROJ_DIR$\..\..\..\software\hacs\platform\src\hacs_crc.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\software\hacs\platform\src\hacs_debug_uart.c</name>
     </file>
     <file>
@@ -243,6 +249,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\software\hacs\platform\src\hacs_platform_resources.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\software\hacs\platform\src\hacs_pstore.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\software\hacs\platform\src\hacs_spi_master.c</name>

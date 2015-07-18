@@ -4,10 +4,12 @@
 /result
 /software/third_party/CMSIS/Documentation
 /project/HACS_app/IAR/Debug
+/project/HACS_app/IAR/settings
 /project/STM32CubeMX
 /project/Sublime
 /project/Watchdog_Micro/AVR_Studio/Watchdog_Micro/Debug
 /project/HACS_bootloader/IAR/Debug
+/project/HACS_bootloader/IAR/settings
 
 # C ignore
 

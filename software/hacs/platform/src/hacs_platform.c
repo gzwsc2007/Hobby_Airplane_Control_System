@@ -16,7 +16,6 @@
 #include "bmp085.h"
 #include "hacs_timer.h"
 #include "rc_receiver.h"
-#include "hacs_telemetry.h"
 #include "actuator.h"
 #include "hacs_crc.h"
 #include "hacs_pstore.h"
@@ -92,7 +91,6 @@ void hacs_platform_init(void)
   mpu6050_early_init();
   bmp085_early_init();
 
-  hacs_telemetry_early_init();
   hacs_pstore_init();
   rc_recvr_init();
   actuator_init();

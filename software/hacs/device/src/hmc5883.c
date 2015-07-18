@@ -60,9 +60,10 @@ int hmc5883_update_xyz(int16_t *px, int16_t *py, int16_t *pz) {
 	y = y << 8;
 	y |= buf[5];
 
-	*px = x;
+	// Apply sign correction. TODO: this might not be a good place to do it..
+	*px = y;
 	*pz = z;
-	*py = y;
+	*py = -x;
 
 	return retval;
 }

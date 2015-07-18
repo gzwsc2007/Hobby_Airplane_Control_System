@@ -58,8 +58,8 @@ int hacs_pstore_get(hacs_pstore_type_t ent, uint8_t *rbuf, uint32_t byte_len)
 top:
   ent_header = (hacs_pstore_entry_t*)ent_addr_abs;
 
-  // Check entry size. Make sure the read buffer isn't too small.
-  if (byte_len < ent_header->byte_len) {
+  // Check entry size. Make sure the size is correct.
+  if (byte_len != ent_header->byte_len) {
     if (first) {
       // Failed current bank. Try the other bank.
       ent_addr_abs = alternate_bank_addr + hacs_pstore_ent_rel_addr[ent];

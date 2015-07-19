@@ -19,6 +19,7 @@
 #include "hacs_timer.h"
 #include "rc_receiver.h"
 #include "hacs_pstore.h"
+#include "ms4525do.h"
 
 extern uint8_t g_sensor_log_enable;
 
@@ -241,6 +242,11 @@ int hacs_console_cmd_dispatch(char *buf)
     retval = hacs_pstore_get(HACS_PSTORE_MAG_HARD_CAL, get_buf, sizeof(get_buf));
     printf("get: %d %d %d %d %d %d %d %d\r\n", get_buf[0], get_buf[1], get_buf[2],
            get_buf[3], get_buf[4], get_buf[5], get_buf[6], get_buf[7]);
+  } else if (!strcmp(buf, "ms4525")) {
+    float p;
+    retval = ms4525do_get_dp(&p);
+    HACS_REQUIRES(retval >= 0, done);
+    printf("%f\r\n", p);
   }
 
 done:

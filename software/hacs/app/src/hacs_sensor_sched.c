@@ -20,7 +20,7 @@
 #define MPU6050_TIMEOUT_MS    (100)
 #define BMP085_TIMEOUT_MS     (50)
 
-#define DECLINATIOIN_COMPENSATION   (13.37f)
+#define DECLINATIOIN_COMPENSATION   (-2.7f)
 
 #define ALPHA_ACCEL     (0.7f)
 #define ALPHA_GYRO      (0.05f)

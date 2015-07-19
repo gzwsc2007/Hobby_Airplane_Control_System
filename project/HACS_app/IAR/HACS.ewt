@@ -224,6 +224,9 @@
       <name>$PROJ_DIR$\..\..\..\software\hacs\device\src\mpu6050_serial.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\software\hacs\device\src\ms4525do.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\software\hacs\device\src\nrf24l01.c</name>
     </file>
     <file>

@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>3525967331</fileChecksum>
+  <fileChecksum>1718638726</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
@@ -659,6 +659,11 @@
       <file>$PROJ_DIR$\..\..\..\software\third_party\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma_ex.c</file>
       <file>$PROJ_DIR$\..\..\..\software\third_party\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_eth.c</file>
       <file>$PROJ_DIR$\..\..\..\software\third_party\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash.c</file>
+      <file>$PROJ_DIR$\..\..\..\result\HACS_app\stm32f411re\Obj\ms4525do.o</file>
+      <file>$PROJ_DIR$\..\..\..\result\HACS_app\stm32f411re\Obj\ms4525do.pbi</file>
+      <file>$PROJ_DIR$\..\..\..\software\hacs\device\inc\ms4525do.h</file>
+      <file>$TOOLKIT_DIR$\config\debugger\ST\STM32F411xx.svd</file>
+      <file>$PROJ_DIR$\..\..\..\software\hacs\device\src\ms4525do.c</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\..\..\..\software\third_party\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_cortex.c</name>
@@ -1529,10 +1534,6 @@
           <name>ICCARM</name>
           <file> 524 583 354 349 97 433 308 120 623 94 359 572 309 235 310 503 52 474 506 109 578 482 317 246 260 290 284 273 275 374 286 329 396 267 266 287 272 303 233 323 405 265 312 262 274 498 269 344 327 324 326 252 351 283 268 387 556 331 255 289 306 635 497 478 295 313 328 294 487 234 241 334 369 276 300 236 285 315 500 510 555 519 518 516</file>
         </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 94 374 273 300 306 310 329 265 387 241 583 623 235 109 326 269 252 556 308 635 354 510 309 255 294 369 285 349 503 52 260 498 324 351 275 272 405 246 524 359 331 289 328 234 334 276 236 315 120 97 433 572 317 474 578 482 506 290 303 233 323 312 274 344 283 268 284 286 396 266 287 267 262 327 478 313 487 500 555 519 518 497 295 516</file>
-        </tool>
       </inputs>
     </file>
     <file>
@@ -2066,7 +2067,7 @@
       <inputs>
         <tool>
           <name>ILINK</name>
-          <file> 231 499 281 58 107 304 311 291 318 85 147 86 264 124 221 480 475 299 521 92 485 522 111 126 98 125 142 130 496 134 123 138 186 118 135 166 533 75 557 127 136 112 293 116 162 223 358 394 399 335 322 227 391 325 345 305 145 367 400 353 403 343 338 376 375 207 342 320 216 373 332 378 337 384 401 333 370 121 67 129 365 189 180 339 386 243 185 199 206 381 115 114 198 57 93 91 548 562 551 362 637</file>
+          <file> 231 499 281 58 107 304 311 291 318 85 147 86 264 124 221 480 475 299 521 92 485 522 111 126 98 125 142 130 496 134 653 123 138 186 118 135 166 533 75 557 127 136 112 293 116 162 223 358 394 399 335 322 227 391 325 345 305 145 367 400 353 403 343 338 376 375 207 342 320 216 373 332 378 337 384 401 333 370 121 67 129 365 189 180 339 386 243 185 199 206 381 115 114 198 57 93 91 548 562 551 362 637</file>
         </tool>
       </inputs>
     </file>
@@ -4113,6 +4114,29 @@
         <tool>
           <name>BICOMP</name>
           <file> 233 286 260 290 274 266 583 349 273 303 323 312 344 283 268 284 396 287 52 498 324 326 351 374 275 310 503 317 474 578 482 109 267 262 327 354 308 120 97 433 506 329 272 405 265 269 252</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\software\hacs\device\src\ms4525do.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 653</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 654</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 309 235 310 503 52 583 354 349 97 433 308 120 474 506 109 578 482 317 246 260 290 284 273 275 374 286 329 396 267 266 287 272 303 233 323 405 265 312 262 274 498 269 344 327 324 326 252 351 283 268 296 556 623 655</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 273 268 503 583 308 109 323 396 246 296 310 317 52 303 312 344 283 284 287 655 235 349 260 290 233 274 286 266 267 262 327 354 309 474 578 482 120 97 433 506 498 324 326 351 374 275 329 272 405 265 269 252 556 623</file>
         </tool>
       </inputs>
     </file>

@@ -112,6 +112,9 @@ extern const hacs_pwm_chan_t actuator_to_pwm_map[HACS_NUM_ACTUATOR];
 #define ADS1120_CS_PORT                 GPIOC
 #define ADS1120_CS_PIN                  GPIO_PIN_0
 
+#define ADS1120_DRDY_PORT               GPIOC
+#define ADS1120_DRDY_PIN                GPIO_PIN_4
+
 /* Definition for USART2 clock resources */
 #define USART2_RX_GPIO_CLK_ENABLE()     __GPIOA_CLK_ENABLE()
 #define USART2_TX_GPIO_CLK_ENABLE()     __GPIOA_CLK_ENABLE()

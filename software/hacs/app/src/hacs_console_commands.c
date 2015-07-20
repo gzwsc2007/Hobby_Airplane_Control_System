@@ -20,6 +20,7 @@
 #include "rc_receiver.h"
 #include "hacs_pstore.h"
 #include "ms4525do.h"
+#include "ads1120.h"
 
 extern uint8_t g_sensor_log_enable;
 
@@ -247,6 +248,15 @@ int hacs_console_cmd_dispatch(char *buf)
     retval = ms4525do_get_dp(&p);
     HACS_REQUIRES(retval >= 0, done);
     printf("%f\r\n", p);
+
+  } else if (!memcmp(buf, "adc ", sizeof("adc ")-1)) {
+    buf += sizeof("adc ")-1;
+    uint32_t chan = strtoul(buf, NULL, 10);
+    uint16_t res = 0;
+    HACS_REQUIRES(chan <= ADS1120_SINGLE_ENDED_CHAN_3, done);
+    retval = ads1120_read_single_ended(chan, &res);
+    HACS_REQUIRES(retval >= 0, done);
+    printf("%4x\r\n", res);
   }
 
 done:

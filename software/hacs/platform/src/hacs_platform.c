@@ -14,6 +14,7 @@
 #include "gps_serial.h"
 #include "mpu6050_serial.h"
 #include "bmp085.h"
+#include "ads1120.h"
 #include "hacs_timer.h"
 #include "rc_receiver.h"
 #include "actuator.h"
@@ -57,10 +58,11 @@ void hacs_platform_init(void)
   debug_uart_init(115200);
 
   /* Init SPI master */
-  spi_master_init(HACS_SPI_NRF24, 50000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_0);
+  spi_master_init(HACS_SPI_NRF24, 1000000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_0);
+  spi_master_init(HACS_SPI_ADS1120, 1000000, HACS_SPI_CPOL_0, HACS_SPI_CPHA_1);
 
   /* Init I2C master */
-  if (i2c_master_init(HACS_I2C, 50000) != 0) {
+  if (i2c_master_init(HACS_I2C, 100000) != 0) {
     printf("Error in i2c_master_init!\r\n");
   }
 
@@ -90,6 +92,7 @@ void hacs_platform_init(void)
   gps_early_init();
   mpu6050_early_init();
   bmp085_early_init();
+  ads1120_early_init();
 
   hacs_pstore_init();
   rc_recvr_init();

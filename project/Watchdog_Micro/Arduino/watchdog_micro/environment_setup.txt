@@ -1,0 +1,15 @@
+Setting up the Arduino IDE to work with the ATTiny45
+
+Source: http://42bots.com/tutorials/how-to-program-attiny85-with-arduino-uno-part-1/
+
+1. Download the ATTiny library from https://github.com/damellis/attiny/archive/master.zip
+
+2. Unzip the attiny master.zip file. It should contain an "attiny-master" folder that contains an "attiny" folder.
+
+3. Create a new sub-folder called "hardware" in the sketchbook folder, if it doesn't exist already.
+
+4. Copy the "attiny" folder (not the attiny-master folder) from the unzipped ATtiny master.zip to the "hardware" folder.
+
+5. In the Arduino IDE, select ATtiny45 (internal 8 MHz clock) as the board.
+
+Now, setup the Arduino Uno as an ArduinoISP programmer, by selecting ArduinoISP under the Programmer tab. Then click (Burn Bootloader to program the fuse settings). Then, click File->Upload using Programmer to program the ATTiny.

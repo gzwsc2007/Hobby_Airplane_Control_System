@@ -3,7 +3,7 @@
 
 int actuator_init(void);
 // Set the output of an actuator channel. Output value must be
-// between -1000 and 1000
+// between HACS_RC_VAL_MIN and HACS_RC_VAL_MAX
 int actuator_set_output(hacs_actuator_t chan, int32_t val);
 
 #endif

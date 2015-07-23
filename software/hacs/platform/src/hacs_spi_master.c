@@ -9,7 +9,7 @@
 #define SPI_OP_TIMEOUT_MS   (100)
 
 static SPI_HandleTypeDef spi_handles[HACS_NUM_SPI_PERIPH];
-static xSemaphoreHandle spi_locks[HACS_NUM_I2C_PERIPH];
+static xSemaphoreHandle spi_locks[HACS_NUM_SPI_PERIPH];
 
 static uint32_t calc_prescaler_from_freq(hacs_spi_t bus, uint32_t freq)
 {

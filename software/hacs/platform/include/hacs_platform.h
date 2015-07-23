@@ -20,9 +20,14 @@
 #define HACS_PSTORE_BANK_SIZE ((uint32_t)1024)
 
 // Assumed convention of RC signals
-#define RC_PWM_PERIOD_US     (20000UL) // 20ms
-#define RC_PWM_MAX_WIDTH_US  (2000UL) // 2ms
-#define RC_PWM_MIN_WIDTH_US  (1000UL) // 1ms
+#define RC_PWM_PERIOD_US     	   ((int32_t)20000) // 20ms
+#define RC_PWM_MAX_WIDTH_US   	 ((int32_t)2000) // 2ms
+#define RC_PWM_MIN_WIDTH_US   	 ((int32_t)1000) // 1ms
+#define RC_PWM_MIDSCALE_WIDTH_US ((int32_t)(RC_PWM_MAX_WIDTH_US+RC_PWM_MIN_WIDTH_US)/2)
+
+// A scale internally used to represent RC channel readings and actuator outputs
+#define HACS_RC_VAL_MIN			 (RC_PWM_MIN_WIDTH_US - RC_PWM_MIDSCALE_WIDTH_US)
+#define HACS_RC_VAL_MAX			 (RC_PWM_MAX_WIDTH_US - RC_PWM_MIDSCALE_WIDTH_US)
 
 extern uint8_t hacs_critical_ref_count;
 

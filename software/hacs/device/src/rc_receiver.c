@@ -9,9 +9,6 @@
 #define FIRST_CHANNEL   RC_CHAN_THROTTLE
 #define LAST_CHANNEL    RC_CHAN_AUX_1
 
-#define PULSE_WIDTH_OFFSET_US ((RC_PWM_MAX_WIDTH_US+RC_PWM_MIN_WIDTH_US)/2)
-
-//static int32_t rc_chan_offset[HACS_NUM_RC_CHAN];
 static volatile uint32_t start_time[HACS_NUM_RC_CHAN];
 static volatile uint32_t rc_chan_readings[HACS_NUM_RC_CHAN];
 static volatile uint8_t seen_rise[HACS_NUM_RC_CHAN];
@@ -20,7 +17,12 @@ static xSemaphoreHandle sample_complete;
 
 static int32_t pulse_width_to_chan_reading(hacs_rc_chan_t chan, uint32_t width_us)
 {
-  return (int32_t)width_us - (int32_t)PULSE_WIDTH_OFFSET_US;
+  int32_t scaled = (int32_t)width_us - (int32_t)RC_PWM_MIDSCALE_WIDTH_US;
+
+  if (scaled < HACS_RC_VAL_MIN) scaled = HACS_RC_VAL_MIN;
+  else if (scaled > HACS_RC_VAL_MAX) scaled = HACS_RC_VAL_MAX;
+
+  return scaled;
 }
 
 static void decode(hacs_rc_chan_t chan)
@@ -116,9 +118,6 @@ static void aux1_chan_handler(void)
 int rc_recvr_init(void)
 {
   sample_complete = xSemaphoreCreateBinary();
-
-  // Initialize rc channel offsets. Read them from env if valid
-  // TODO
 
   // Set counting timer expire time to 1s
   timer_set_period(HACS_BASIC_TIMER, 1000000);

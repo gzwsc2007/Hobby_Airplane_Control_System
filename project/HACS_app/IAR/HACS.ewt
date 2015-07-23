@@ -212,6 +212,9 @@
       <name>$PROJ_DIR$\..\..\..\software\hacs\device\src\actuator.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\software\hacs\device\src\ads1120.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\software\hacs\device\src\bmp085.c</name>
     </file>
     <file>

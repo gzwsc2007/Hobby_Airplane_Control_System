@@ -34,7 +34,7 @@ int ms4525do_get_dp(float *p_result)
   HACS_REQUIRES(retval >= 0, done);
 
   // check the status bit
-  if (buf[0] & STATUS_BIT_MASK == STATUS_NORMAL) {
+  if ((buf[0] & STATUS_BIT_MASK) == STATUS_NORMAL) {
     uint16_t raw = ((uint16_t)(buf[0] & ~STATUS_BIT_MASK) << 8) | (uint16_t)buf[1];
 
     // Refer to the official MS4525DO datasheet for the below calculation (specific to MS4525DO-DS5AI001P)

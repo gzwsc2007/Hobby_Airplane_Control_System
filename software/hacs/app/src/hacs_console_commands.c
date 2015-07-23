@@ -163,10 +163,6 @@ int hacs_console_cmd_dispatch(char *buf)
     } else {
       printf("Error: %d\r\n", bmp_retval);
     }
-  } else if (!strcmp(buf, "sensor start")) {
-    hacs_sensor_sched_start();
-  } else if (!strcmp(buf, "sensor stop")) {
-    hacs_sensor_sched_stop();
   } else if (!strcmp(buf, "gyro stats")) { /*
     mpu_data_t temp;
     xQueueHandle q = mpu6050_get_msg_queue();

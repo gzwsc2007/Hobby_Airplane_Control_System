@@ -11,6 +11,7 @@
 #include "gps_serial.h"
 #include "bmp085.h"
 #include "hmc5883.h"
+#include "ms4525do.h"
 #include "hacs_system_config.h"
 #include "hacs_telemetry.h"
 #include "hacs_sensor_cal.h"
@@ -19,6 +20,8 @@
 
 #define MPU6050_TIMEOUT_MS    (100)
 #define BMP085_TIMEOUT_MS     (50)
+
+#define AIR_DENSITY_KG_M3           (1.15f) // kg/m^3
 
 #define DECLINATIOIN_COMPENSATION   (-2.7f)
 
@@ -30,12 +33,14 @@ static xSemaphoreHandle bmp085_done_sema4;
 uint8_t g_sensor_log_enable = 0;
 
 static void bmp085_done_cb(int retval);
+static float get_airspeed(void);
 
 void hacs_sensor_sched_task(void *param) {
   xQueueHandle mpu_msg_queue = mpu6050_get_msg_queue();
   xQueueHandle gps_msg_queue = gps_get_msg_queue();
   mpu_data_t mpu_data;
   gps_data_t gps_data;
+  float airspeed = 0;
   float altitude;
   int16_t temperature;
   portBASE_TYPE gps_data_available;
@@ -60,6 +65,8 @@ void hacs_sensor_sched_task(void *param) {
   bmp085_done_sema4 = xSemaphoreCreateBinary();
   xLastWakeTime = xTaskGetTickCount();
 
+  gps_start_parsing(); // Always enable GPS parsing
+
   while (1) {
     vTaskDelayUntil(&xLastWakeTime, MS_TO_TICKS(40));
     mode = hacs_get_system_mode();
@@ -80,7 +87,8 @@ void hacs_sensor_sched_task(void *param) {
       continue;
     }
 
-    // TODO: request airspeed reading
+    // obtain airspeed reading
+    airspeed = get_airspeed();
 
     // obtain calibrated magnetic heading from compass
     hmc5883_update_xyz(&magx, &magy, &magz);
@@ -134,7 +142,7 @@ void hacs_sensor_sched_task(void *param) {
     // TODO: Notify Controller
 
     // Notify telemetry TX
-    hacs_telem_send_pfd(roll, pitch, yaw, altitude, 0, 0);
+    hacs_telem_send_pfd(roll, pitch, yaw, altitude, airspeed, 0);
 
     if (gps_data_available) {
       // NavD packets are driven by GPS
@@ -149,27 +157,17 @@ void hacs_sensor_sched_task(void *param) {
   }
 }
 
-int hacs_sensor_sched_start() {
-  int retval;
-
-  retval = gps_start_parsing();
-  HACS_REQUIRES(retval == HACS_NO_ERROR, done);
-
-done:
-  return retval;
-}
-
-int hacs_sensor_sched_stop() {
-  int retval;
-
-  retval = gps_stop_parsing();
-  HACS_REQUIRES(retval == HACS_NO_ERROR, done);
-
-done:
-  return retval;
-}
-
 static void bmp085_done_cb(int retval) {
   bmp085_retval = retval;
   xSemaphoreGive(bmp085_done_sema4);
+}
+
+static float get_airspeed(void) {
+  float dp = 0;
+  float speed;
+
+  ms4525do_get_dp(&dp);
+  speed = sqrt(2 * dp / AIR_DENSITY_KG_M3);
+
+  return speed;
 }

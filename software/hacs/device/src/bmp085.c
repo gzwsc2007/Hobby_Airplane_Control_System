@@ -8,7 +8,7 @@
 #include "semphr.h"
 
 #define BMP085_DRIVER_STACK_SIZE  (128)
-#define BMP085_DRIVER_PRIORITY    (6)
+#define BMP085_DRIVER_PRIORITY    (3)
 
 #define SAMPLE_IN_PROGRESS    (1)
 #define READY_FOR_SAMPLE      (0)
@@ -84,6 +84,7 @@ int bmp085_request_sample(float *p_alt, int16_t *p_temp, bmp085_cb_t done_cb) {
   if (sample_lock == SAMPLE_IN_PROGRESS) {
     return -HACS_ERR_ALREADY_IN_USE;
   }
+  sample_lock = SAMPLE_IN_PROGRESS;
 
   singleshot_done_cb = done_cb;
   p_singleshot_alt = p_alt;

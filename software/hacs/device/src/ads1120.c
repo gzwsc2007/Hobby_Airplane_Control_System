@@ -6,6 +6,11 @@
 #include "hacs_gpio.h"
 #include "ads1120.h"
 
+#define FULL_SCALE                    ((uint16_t)0x7FFF)
+
+#define INTERNAL_REFERENCE_VOLTS      (2.048f)
+#define EXTERNAL_REFERENCE_VOLTS      (4.089f)
+
 #define COMMAND_RESET                 (0x06)
 #define COMMAND_START                 (0x08)
 #define COMMAND_POWERDOWN             (0x02)
@@ -80,6 +85,7 @@
 #define REG_2_VREF_INTERNAL_2V048     (0x00)
 #define REG_2_VREF_EXTERNAL_0         (0x40)
 #define REG_2_VREF_EXTERNAL_1         (0x80)
+#define REG_2_VREF_VDD                (0xC0)
 
 /*********** Configuration Register 2 ***********/
 /* Behavior of DOUT/DRDY_L pin */
@@ -133,10 +139,18 @@ done:
   return retval;
 }
 
-int ads1120_read_single_ended(ads1120_chan_t chan, uint16_t *p_result)
+/*
+ * Read a single-ended channel, using internal/external/Vdd as reference.
+ * If Vdd (Ratiometric) is selected, the range of the result is 0.0 ~ 1.0.
+ * Otherwise, the result is in Volts.
+ */
+int ads1120_read_single_ended(ads1120_chan_t chan, ads1120_vref_t ref, float *p_result)
 {
   uint8_t val;
   uint8_t mux;
+  uint8_t vref;
+  float vref_v;
+  uint16_t raw;
   int retval;
 
   xSemaphoreTake(dev_lock, portMAX_DELAY);
@@ -155,6 +169,27 @@ int ads1120_read_single_ended(ads1120_chan_t chan, uint16_t *p_result)
   retval = write_reg(REG_0, (val & ~REG_0_MUX_MASK) | mux);
   HACS_REQUIRES(retval >= 0, done);
 
+  switch (ref) {
+    case ADS1120_REF_INTERNAL:
+      vref = REG_2_VREF_INTERNAL_2V048;
+      vref_v = INTERNAL_REFERENCE_VOLTS;
+      break;
+    case ADS1120_REF_EXTERNAL:
+      vref = REG_2_VREF_EXTERNAL_0;
+      vref_v = EXTERNAL_REFERENCE_VOLTS;
+      break;
+    case ADS1120_REF_RATIOMETRIC:
+      vref = REG_2_VREF_VDD;
+      vref_v = 1.0; // Ratiometric - range 0.0 ~ 1.0
+      break;
+  }
+
+  // Read Reg 2, and then set the appropriate voltage reference
+  retval = read_reg(REG_2, &val);
+  HACS_REQUIRES(retval >= 0, done);
+  retval = write_reg(REG_2, (val & ~REG_2_VREF_MASK) | vref);
+  HACS_REQUIRES(retval >= 0, done);
+
   // Enable external interrupt. To be triggered by falling edge
   gpio_exti_enable(ADS1120_DRDY_PORT, ADS1120_DRDY_PIN, 0, 1);
 
@@ -165,7 +200,11 @@ int ads1120_read_single_ended(ads1120_chan_t chan, uint16_t *p_result)
   // Wait for conversion to finish. TODO: add timeout
   xSemaphoreTake(drdy_sem, portMAX_DELAY);
 
-  retval = read_data(p_result);
+  // Read the 16-bit result
+  retval = read_data(&raw);
+  HACS_REQUIRES(retval >= 0, done);
+
+  *p_result = (float)raw / (float)FULL_SCALE * vref_v;
 
 done:
   xSemaphoreGive(dev_lock);

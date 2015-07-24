@@ -159,7 +159,8 @@ int hacs_telem_send_navd(int32_t latitude, int32_t longitude, uint16_t speed,
   navd_s.groundspeed = speed;
   navd_s.course = course;
   navd_s.battV = (int16_t)(batt_V * 100.0); // 0.01 V
-
+  navd_s.temp = temperature;
+  
   // Notify TX task
   xQueueSend(tx_queue, &type, portMAX_DELAY);
 

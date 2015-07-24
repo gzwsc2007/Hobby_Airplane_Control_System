@@ -12,14 +12,15 @@
 #include "bmp085.h"
 #include "hmc5883.h"
 #include "ms4525do.h"
+#include "ads1120.h"
 #include "hacs_system_config.h"
 #include "hacs_telemetry.h"
 #include "hacs_sensor_cal.h"
 
 #include "MadgwickAHRS.h"
 
-#define MPU6050_TIMEOUT_MS    (100)
-#define BMP085_TIMEOUT_MS     (50)
+#define MPU6050_TIMEOUT_MS    (10)
+#define BMP085_TIMEOUT_MS     (30)
 
 #define AIR_DENSITY_KG_M3           (1.15f) // kg/m^3
 
@@ -27,6 +28,11 @@
 
 #define ALPHA_ACCEL     (0.7f)
 #define ALPHA_GYRO      (0.05f)
+
+#define ADC_BATTERY_VOLT_CHAN       (ADS1120_SINGLE_ENDED_CHAN_3)
+// R_lower == 9960 ohm
+// R_upper == 32820 ohm
+#define BATTERY_DIVIDER_FACTOR      (4.295f) // (R_lower + R_upper) / R_lower
 
 static int bmp085_retval;
 static xSemaphoreHandle bmp085_done_sema4;
@@ -42,6 +48,8 @@ void hacs_sensor_sched_task(void *param) {
   gps_data_t gps_data;
   float airspeed = 0;
   float altitude;
+  float batt_volt;
+  float batt_current = 0;
   int16_t temperature;
   portBASE_TYPE gps_data_available;
   portBASE_TYPE bmp085_data_available;
@@ -79,12 +87,15 @@ void hacs_sensor_sched_task(void *param) {
     }
 
     // Request a single reading from the MPU
-    mpu6050_start_parsing(MPU_DRIVER_SINGLESHOT_MODE);
+    retval = mpu6050_start_parsing(MPU_DRIVER_SINGLESHOT_MODE);
+    if (retval != 0) {
+      printf("shit! %d\r\n", retval);
+    }
 
     // Request a single reading from the barometer
     retval = bmp085_request_sample(&altitude, &temperature, bmp085_done_cb);
-    if (retval != HACS_NO_ERROR) {
-      continue;
+    if (retval != 0) {
+      printf("bmp shit %d\r\n", retval);
     }
 
     // obtain airspeed reading
@@ -98,7 +109,7 @@ void hacs_sensor_sched_task(void *param) {
     // Poll GPS for data. Don't need to block because GPS is much slower.
     gps_data_available = xQueueReceive(gps_msg_queue, &gps_data, 0);
 
-    xQueueReceive(mpu_msg_queue, &mpu_data, portMAX_DELAY);
+    xQueueReceive(mpu_msg_queue, &mpu_data, MS_TO_TICKS(MPU6050_TIMEOUT_MS));
 
     // Use a simple first order IIR filter to low-pass filter the accel and gyro readings
     gx = mpu_data.p * (1.0-ALPHA_GYRO) + gx * ALPHA_GYRO;
@@ -112,12 +123,21 @@ void hacs_sensor_sched_task(void *param) {
                        ax, ay, az,
                        calmx, calmy, calmz);
 
+    // Obtain battery readings (driven by GPS which has a lower sampling rate)
+    if (gps_data_available) {
+      ads1120_read_single_ended(ADC_BATTERY_VOLT_CHAN, ADS1120_REF_EXTERNAL, &batt_volt);
+      batt_volt *= BATTERY_DIVIDER_FACTOR;
+    }
+
     // Wait for BMP085 to finish
-    bmp085_data_available = xSemaphoreTake(bmp085_done_sema4, portMAX_DELAY);
+    bmp085_data_available = xSemaphoreTake(bmp085_done_sema4, MS_TO_TICKS(BMP085_TIMEOUT_MS));
     if (bmp085_data_available == pdTRUE) {
       if (bmp085_retval != HACS_NO_ERROR) {
         bmp085_data_available = pdFALSE;
+        printf("bad bmp result %d\r\n", bmp085_retval);
       }
+    } else {
+      printf("bmp timeout\r\n");
     }
 
     // TODO: fuse MPU temperature reading and BMP temperature reading
@@ -142,12 +162,12 @@ void hacs_sensor_sched_task(void *param) {
     // TODO: Notify Controller
 
     // Notify telemetry TX
-    hacs_telem_send_pfd(roll, pitch, yaw, altitude, airspeed, 0);
+    hacs_telem_send_pfd(roll, pitch, yaw, altitude, airspeed, batt_current);
 
     if (gps_data_available) {
       // NavD packets are driven by GPS
       hacs_telem_send_navd(gps_data.latitude, gps_data.longitude, gps_data.speed,
-                           gps_data.course, temperature, 0);
+                           gps_data.course, temperature, batt_volt);
     }
 
     // TODO: decide what to send (e.g. send SysID packets?) depending on system state

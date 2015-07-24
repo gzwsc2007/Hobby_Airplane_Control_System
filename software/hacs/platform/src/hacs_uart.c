@@ -16,7 +16,7 @@ static hacs_uart_rx_cb_t uart_rx_ht_cb[HACS_NUM_UART_PERIPH];
 static hacs_uart_rx_cb_t uart_rx_tc_cb[HACS_NUM_UART_PERIPH];
 static uint32_t uart_rx_size[HACS_NUM_UART_PERIPH];
 
-static uint8_t uart_locks[HACS_NUM_UART_PERIPH];
+static volatile uint8_t uart_locks[HACS_NUM_UART_PERIPH];
 
 static void rx_dma_ht(DMA_HandleTypeDef *hdma);
 static void rx_dma_tc(DMA_HandleTypeDef *hdma);
@@ -56,7 +56,7 @@ int hacs_uart_init(hacs_uart_t bus, uint32_t baud, uint8_t use_tx_dma, uint8_t u
     hdma->Parent = (void *)bus;
 
     NVIC_SetPriority(hacs_uart_rx_dma_irq[bus],
-                     configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY);
+                     configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY+2);
 
     retval = HAL_DMA_Init(hdma);
   }
@@ -110,14 +110,17 @@ int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size,
 int hacs_uart_stop_listening(hacs_uart_t bus) {
   DMA_HandleTypeDef *hdma = &uart_rx_dma_handles[bus];
   UART_HandleTypeDef *huart = &uart_handles[bus];
-
-  uart_locks[bus] = BUS_IDLE;
+  int retval;
 
   huart->Instance->CR3 &= ~(USART_CR3_DMAR);
 
   NVIC_DisableIRQ(hacs_uart_rx_dma_irq[bus]);
 
-  return HAL_DMA_Abort(hdma);
+  retval = HAL_DMA_Abort(hdma);
+
+  uart_locks[bus] = BUS_IDLE;
+
+  return retval;
 }
 
 int hacs_uart_blocking_transmit(hacs_uart_t bus, uint8_t *wbuf, size_t wsize) {

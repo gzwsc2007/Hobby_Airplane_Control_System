@@ -88,13 +88,13 @@ void hacs_sensor_sched_task(void *param) {
     // Request a single reading from the MPU
     retval = mpu6050_start_parsing(MPU_DRIVER_SINGLESHOT_MODE);
     if (retval != 0) {
-      printf("shit! %d\r\n", retval);
+      printf("mpu %d\r\n", retval);
     }
 
     // Request a single reading from the barometer
     retval = bmp085_request_sample(&altitude, &temperature, bmp085_done_cb);
     if (retval != 0) {
-      printf("bmp shit %d\r\n", retval);
+      printf("bmp %d\r\n", retval);
     }
 
     // obtain airspeed reading

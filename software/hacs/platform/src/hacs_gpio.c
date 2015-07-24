@@ -232,22 +232,30 @@ void EXTI9_5_IRQHandler(void) {
     if (exti_cb_assignment[5] != NULL) {
       exti_cb_assignment[5]();
     }
-  } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_6)) {
+  }
+
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_6)) {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_6);
     if (exti_cb_assignment[6] != NULL) {
       exti_cb_assignment[6]();
     }
-  } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_7)) {
+  }
+
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_7)) {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_7);
     if (exti_cb_assignment[7] != NULL) {
       exti_cb_assignment[7]();
     }
-  } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_8)) {
+  }
+
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_8)) {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
     if (exti_cb_assignment[8] != NULL) {
       exti_cb_assignment[8]();
     }
-  } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_9)) {
+  }
+
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_9)) {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_9);
     if (exti_cb_assignment[9] != NULL) {
       exti_cb_assignment[9]();
@@ -261,27 +269,37 @@ void EXTI15_10_IRQHandler(void) {
     if (exti_cb_assignment[10] != NULL) {
       exti_cb_assignment[10]();
     }
-  } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_11)) {
+  }
+
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_11)) {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_11);
     if (exti_cb_assignment[11] != NULL) {
       exti_cb_assignment[11]();
     }
-  } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_12)) {
+  }
+
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_12)) {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_12);
     if (exti_cb_assignment[12] != NULL) {
       exti_cb_assignment[12]();
     }
-  } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13)) {
+  }
+
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13)) {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_13);
     if (exti_cb_assignment[13] != NULL) {
       exti_cb_assignment[13]();
     }
-  } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_14)) {
+  }
+
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_14)) {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_14);
     if (exti_cb_assignment[14] != NULL) {
       exti_cb_assignment[14]();
     }
-  } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15)) {
+  }
+
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15)) {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
     if (exti_cb_assignment[15] != NULL) {
       exti_cb_assignment[15]();

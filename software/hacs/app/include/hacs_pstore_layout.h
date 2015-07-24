@@ -21,7 +21,7 @@ typedef struct {
 typedef enum {
   HACS_PSTORE_MAG_HARD_CAL, // Magnetometer hard-iron calibration
   HACS_PSTORE_MAG_SOFT_CAL, // Magnetometer soft-iron calibration
-//  HACS_PSTORE_RC_RECVR_CAL, // RC receiver channel range calibration
+  HACS_PSTORE_BARO_REF_CAL, // Barometer ground reference pressure
 
   HACS_PSTORE_NUM_ENTRIES,
 } hacs_pstore_type_t;
@@ -32,7 +32,7 @@ extern const uint32_t hacs_pstore_ent_rel_addr[HACS_PSTORE_NUM_ENTRIES];
 extern const uint16_t hacs_pstore_ent_size[HACS_PSTORE_NUM_ENTRIES];
 
 #include "hacs_platform.h"
-#include "hacs_sensor_cal.h"
+#include "hmc5883.h"
 
 #define PSTORE_MAG_HARD_CAL_ADDR      (ALIGN_TO_WORD(sizeof(hacs_pstore_header_t)))
 #define PSTORE_MAG_HARD_CAL_LEN       (ALIGN_TO_WORD(sizeof(float32_t) * HARD_IRON_MAT_ROW * \
@@ -43,5 +43,10 @@ extern const uint16_t hacs_pstore_ent_size[HACS_PSTORE_NUM_ENTRIES];
                                        + PSTORE_MAG_HARD_CAL_LEN))
 #define PSTORE_MAG_SOFT_CAL_LEN       (ALIGN_TO_WORD(sizeof(float32_t) * SOFT_IRON_MAT_ROW * \
                                        SOFT_IRON_MAT_COL))
+
+#define PSTORE_BARO_GND_REF_ADDR      (ALIGN_TO_WORD(PSTORE_MAG_SOFT_CAL_ADDR + \
+                                       sizeof(hacs_pstore_entry_t) \
+                                       + PSTORE_MAG_SOFT_CAL_LEN))
+#define PSTORE_BARO_GND_REF_LEN       (ALIGN_TO_WORD(sizeof(uint32_t)))
 
 #endif

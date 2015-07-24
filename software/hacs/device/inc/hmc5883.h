@@ -15,6 +15,11 @@
 #define HMC5883_IRB_REG     0x0B // reads "4"
 #define HMC5883_IRC_REG     0x0C // reads "3"
 
+#define HARD_IRON_MAT_ROW   (3)
+#define HARD_IRON_MAT_COL   (1)
+#define SOFT_IRON_MAT_ROW   (3)
+#define SOFT_IRON_MAT_COL   (3)
+
 #include "arm_math.h"
 
 int hmc5883_init();

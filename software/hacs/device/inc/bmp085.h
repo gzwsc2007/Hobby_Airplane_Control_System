@@ -22,4 +22,7 @@ int bmp085_early_init(void);
  */
 int bmp085_request_sample(float *p_altitude, int16_t *p_temperature, bmp085_cb_t done_cb);
 
+/* Measure the pressure at ground as a reference */
+int bmp085_ground_calibration(void);
+
 #endif

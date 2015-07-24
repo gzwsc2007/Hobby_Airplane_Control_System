@@ -2,21 +2,21 @@
 #include <stdio.h>
 #include "hacs_platform.h"
 #include "hacs_i2c_master.h"
+#include "hacs_pstore.h"
 #include "bmp085.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
 
+#define DEFAULT_GROUND_LEVEL_PRESSURE_PA      (101000)
+
 #define BMP085_DRIVER_STACK_SIZE  (128)
 #define BMP085_DRIVER_PRIORITY    (3)
-
-#define SAMPLE_IN_PROGRESS    (1)
-#define READY_FOR_SAMPLE      (0)
 
 #define BMP085_TEMPERATURE_CONVERSION_MS      (5)
 #define PRESSURE_REF_CAL_ITERATIONS           (3)
 
-static volatile uint8_t sample_lock;
+static xSemaphoreHandle dev_lock;
 static xSemaphoreHandle start_sema4;
 static bmp085_cb_t singleshot_done_cb;
 static float *p_singleshot_alt;
@@ -26,8 +26,7 @@ static int16_t *p_singleshot_temp; // in 0.1 Celcius
 static int16_t ac1, ac2, ac3, b1, b2, mb, mc, md;
 static uint16_t ac4, ac5, ac6;
 
-// reference pressure at ground level. Calculated when the
-// device is first initialized
+// reference pressure at ground level.
 static uint32_t press_ref;
 
 static int bmp085_late_init(void);
@@ -43,18 +42,15 @@ static void bmp085_driver_task(void *param) {
   retval = bmp085_late_init();
   HACS_REQUIRES(retval == HACS_NO_ERROR, error);
 
-  // Obtain pressure at ground-level for reference
-  press_ref = 0;
-  for (int i = 0; i < PRESSURE_REF_CAL_ITERATIONS; i++) {
-    retval = bmp085_get_temp_and_press(NULL, &pressure);
-    HACS_REQUIRES(retval == HACS_NO_ERROR, error);
-    press_ref += pressure;
+  // Try to read reference pressure from persistent storage
+  if (hacs_pstore_get(HACS_PSTORE_BARO_REF_CAL, (uint8_t*)&press_ref, sizeof(press_ref)) != HACS_NO_ERROR) {
+    // If the read fails, use a default value.
+    press_ref = DEFAULT_GROUND_LEVEL_PRESSURE_PA;
   }
-  press_ref = press_ref / PRESSURE_REF_CAL_ITERATIONS;
+  printf("bmp ref pressures: %d\r\n", press_ref);
 
   while (1) {
     // Wait to be notified
-    sample_lock = READY_FOR_SAMPLE;
     xSemaphoreTake(start_sema4, portMAX_DELAY);
 
     retval = bmp085_get_temp_and_press(p_singleshot_temp, &pressure);
@@ -64,6 +60,7 @@ static void bmp085_driver_task(void *param) {
 
 sample_done:
     if (singleshot_done_cb) singleshot_done_cb(retval);
+    xSemaphoreGive(dev_lock);
   }
 
 error:
@@ -72,19 +69,40 @@ error:
 }
 
 int bmp085_early_init(void) {
-  sample_lock = SAMPLE_IN_PROGRESS; // by default start up as busy
+  dev_lock = xSemaphoreCreateMutex();
   start_sema4 = xSemaphoreCreateBinary();
   xTaskCreate(bmp085_driver_task, "bmp085_driver", BMP085_DRIVER_STACK_SIZE, NULL,
               BMP085_DRIVER_PRIORITY, NULL);
   return HACS_NO_ERROR;
 }
 
-int bmp085_request_sample(float *p_alt, int16_t *p_temp, bmp085_cb_t done_cb) {
-  // Check for locking
-  if (sample_lock == SAMPLE_IN_PROGRESS) {
-    return -HACS_ERR_ALREADY_IN_USE;
+// Measure the pressure at ground as a reference
+int bmp085_ground_calibration(void) {
+  int retval;
+  int32_t pressure;
+
+  // Lock the device
+  xSemaphoreTake(dev_lock, portMAX_DELAY);
+
+  // Obtain pressure at ground-level for reference
+  press_ref = 0;
+  for (int i = 0; i < PRESSURE_REF_CAL_ITERATIONS; i++) {
+    retval = bmp085_get_temp_and_press(NULL, &pressure);
+    HACS_REQUIRES(retval == HACS_NO_ERROR, done);
+    press_ref += pressure;
   }
-  sample_lock = SAMPLE_IN_PROGRESS;
+  press_ref = press_ref / PRESSURE_REF_CAL_ITERATIONS;
+
+  retval = hacs_pstore_set(HACS_PSTORE_BARO_REF_CAL, (uint8_t*)&press_ref, sizeof(press_ref));
+
+done:
+  xSemaphoreGive(dev_lock);
+  return retval;
+}
+
+int bmp085_request_sample(float *p_alt, int16_t *p_temp, bmp085_cb_t done_cb) {
+  // Lock the device
+  xSemaphoreTake(dev_lock, portMAX_DELAY);
 
   singleshot_done_cb = done_cb;
   p_singleshot_alt = p_alt;

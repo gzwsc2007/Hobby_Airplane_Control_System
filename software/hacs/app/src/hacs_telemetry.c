@@ -7,6 +7,7 @@
 #include "mavlink.h"
 #include "hacs_system_config.h"
 #include "hmc5883.h"
+#include "bmp085.h"
 
 #define SYSTEM_ID     (250)
 #define COMPONENT_ID  (125)
@@ -193,6 +194,9 @@ static int handle_syscmd(mavlink_syscmd_t *syscmd) {
     hacs_set_system_mode((hacs_mode_t)payload);
     break;
   case HACS_GND_CMD_GET_MODE:
+    break;
+  case HACS_GND_CMD_CALIBRATE_BAROMETER:
+    bmp085_ground_calibration();
     break;
   default: break;
   }

@@ -7,7 +7,6 @@
 #include "hacs_telemetry.h"
 #include "hacs_sensor_sched.h"
 #include "hacs_pilot_cmd.h"
-#include "hacs_sensor_cal.h"
 
 void hacs_app_init(void)
 {
@@ -18,5 +17,4 @@ void hacs_app_init(void)
   xTaskCreate(hacs_pilot_cmd_task, "pilot_cmd", 128, NULL, 6, NULL);
 
   hacs_telemetry_early_init();
-  hacs_cal_init();
 }

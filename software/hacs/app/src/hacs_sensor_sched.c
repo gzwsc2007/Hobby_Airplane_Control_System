@@ -15,7 +15,6 @@
 #include "ads1120.h"
 #include "hacs_system_config.h"
 #include "hacs_telemetry.h"
-#include "hacs_sensor_cal.h"
 
 #include "MadgwickAHRS.h"
 
@@ -102,9 +101,7 @@ void hacs_sensor_sched_task(void *param) {
     airspeed = get_airspeed();
 
     // obtain calibrated magnetic heading from compass
-    hmc5883_update_xyz(&magx, &magy, &magz);
-    hacs_cal_mag_apply((float32_t)magx, (float32_t)magy, (float32_t)magz,
-                       &calmx, &calmy, &calmz);
+    hmc5883_xyz_calibrated(&calmx, &calmy, &calmz);
 
     // Poll GPS for data. Don't need to block because GPS is much slower.
     gps_data_available = xQueueReceive(gps_msg_queue, &gps_data, 0);

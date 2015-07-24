@@ -6,7 +6,7 @@
 #include "nrf24l01.h"
 #include "mavlink.h"
 #include "hacs_system_config.h"
-#include "hacs_sensor_cal.h"
+#include "hmc5883.h"
 
 #define SYSTEM_ID     (250)
 #define COMPONENT_ID  (125)
@@ -60,7 +60,7 @@ void hacs_telemetry_rx_task(void *param) {
           break;
         case MAVLINK_MSG_ID_MagCalResult:
           mavlink_msg_magcalresult_decode(&rx_msg, &magcalresult_s);
-          hacs_cal_mag_config(magcalresult_s.hard_iron, magcalresult_s.soft_iron);
+          hmc5883_set_cal(magcalresult_s.hard_iron, magcalresult_s.soft_iron);
           break;
         default: break;
         }

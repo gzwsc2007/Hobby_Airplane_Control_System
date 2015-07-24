@@ -15,9 +15,13 @@
 #define HMC5883_IRB_REG     0x0B // reads "4"
 #define HMC5883_IRC_REG     0x0C // reads "3"
 
+#include "arm_math.h"
+
 int hmc5883_init();
 int hmc5883_is_ready();
 
 int hmc5883_update_xyz(int16_t *px, int16_t *py, int16_t *pz);
+int hmc5883_xyz_calibrated(float32_t *px, float32_t *py, float32_t *pz);
+int hmc5883_set_cal(float32_t *hard_iron_data, float32_t *soft_iron_data);
 
 #endif

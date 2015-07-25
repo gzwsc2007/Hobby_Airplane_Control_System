@@ -23,6 +23,7 @@ typedef enum {
   HACS_PSTORE_MAG_SOFT_CAL, // Magnetometer soft-iron calibration
   HACS_PSTORE_BARO_REF_CAL, // Barometer ground reference pressure
   HACS_PSTORE_AIRSPEED_ZERO_CAL, // Airspeed zero offset
+  HACS_PSTORE_TRIM_VALS,    // Trim values for aileron, elevator and rudder
 
   HACS_PSTORE_NUM_ENTRIES,
 } hacs_pstore_type_t;
@@ -54,5 +55,10 @@ extern const uint16_t hacs_pstore_ent_size[HACS_PSTORE_NUM_ENTRIES];
                                        sizeof(hacs_pstore_entry_t) \
                                        + PSTORE_BARO_GND_REF_LEN))
 #define PSTORE_AIRSPD_OFFSET_LEN      (ALIGN_TO_WORD(sizeof(float)))
+
+#define PSTORE_TRIM_VALS_ADDR         (ALIGN_TO_WORD(PSTORE_AIRSPD_OFFSET_ADDR + \
+                                       sizeof(hacs_pstore_entry_t) \
+                                       + PSTORE_AIRSPD_OFFSET_LEN))
+#define PSTORE_TRIM_VALS_LEN          (ALIGN_TO_WORD(3 * sizeof(uint32_t)))
 
 #endif

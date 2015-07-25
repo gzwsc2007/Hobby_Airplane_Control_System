@@ -3,8 +3,10 @@
 #include "rc_receiver.h"
 #include "hacs_timer.h"
 #include "hacs_gpio.h"
+#include "hacs_pstore.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
+#include "actuator.h"
 
 #define LAST_CHANNEL    RC_CHAN_AUX_0
 
@@ -12,6 +14,7 @@ static volatile uint32_t start_time[HACS_NUM_RC_CHAN];
 static volatile uint32_t rc_chan_readings[HACS_NUM_RC_CHAN];
 static volatile uint8_t seen_rise[HACS_NUM_RC_CHAN];
 static xSemaphoreHandle sample_complete;
+static int32_t trim_vals_us[3];
 
 static int32_t pulse_width_to_chan_reading(hacs_rc_chan_t chan, uint32_t width_us)
 {
@@ -37,12 +40,7 @@ static void decode(hacs_rc_chan_t chan)
     seen_rise[chan] = 0;
 
     // Get the channel reading
-    uint32_t dummy = timer_get_us(HACS_BASIC_TIMER);
-    rc_chan_readings[chan] = dummy;
-    if (chan == RC_CHAN_AILERON) {
-      static volatile uint32_t dummy2;
-      dummy2 = dummy;
-    }
+    rc_chan_readings[chan] = timer_get_us(HACS_BASIC_TIMER) - start_time[chan];
 
     // Get ready for the next detection on this channel (typically after 20ms)
     gpio_exti_enable(rc_chan_to_gpio_map[chan].port,
@@ -93,6 +91,13 @@ static void aux1_chan_handler(void)
 int rc_recvr_init(void)
 {
   sample_complete = xSemaphoreCreateBinary();
+
+  // Read trim vals. Default to be MIDSCALE_WIDTH
+  if (hacs_pstore_get(HACS_PSTORE_TRIM_VALS, (uint8_t*)&trim_vals_us, sizeof(trim_vals_us)) != HACS_NO_ERROR) {
+    trim_vals_us[0] = RC_PWM_MIDSCALE_WIDTH_US;
+    trim_vals_us[1] = RC_PWM_MIDSCALE_WIDTH_US;
+    trim_vals_us[2] = RC_PWM_MIDSCALE_WIDTH_US;
+  }
 
   // Set counting timer expire time to 100s
   timer_set_period(HACS_BASIC_TIMER, 100000000);
@@ -162,15 +167,45 @@ int rc_recvr_init(void)
 
 uint32_t rc_recvr_read_chan_raw(hacs_rc_chan_t rc_chan)
 {
-  return rc_chan_readings[rc_chan] - start_time[rc_chan];
+  return rc_chan_readings[rc_chan];
 }
 
 int32_t rc_recvr_read_chan_scaled(hacs_rc_chan_t rc_chan)
 {
-  return pulse_width_to_chan_reading(rc_chan, rc_chan_readings[rc_chan] - start_time[rc_chan]);
+  return pulse_width_to_chan_reading(rc_chan, rc_chan_readings[rc_chan]);
 }
 
 int rc_recvr_wait_for_sample(void)
 {
   return xSemaphoreTake(sample_complete, portMAX_DELAY);
+}
+
+// Use the current AILE, ELEV and RUDD raw PWM readings (width in us) as trim values
+int rc_recvr_set_trim_vals(void)
+{
+  int retval;
+
+  trim_vals_us[0] = rc_chan_readings[RC_CHAN_AILERON];
+  trim_vals_us[1] = rc_chan_readings[RC_CHAN_ELEVATOR];
+  trim_vals_us[2] = rc_chan_readings[RC_CHAN_RUDDER];
+
+  retval = hacs_pstore_set(HACS_PSTORE_TRIM_VALS, (uint8_t*)&trim_vals_us, sizeof(trim_vals_us));
+
+  actuator_reload_trimval_from_pstore();
+
+  return retval;
+}
+
+// Get trim values. rc_chan can only be AILE, ELEV or RUDD
+int32_t rc_recvr_get_trim_val(hacs_rc_chan_t rc_chan)
+{
+  if (rc_chan == RC_CHAN_AILERON) {
+    return trim_vals_us[0];
+  } else if (rc_chan == RC_CHAN_ELEVATOR) {
+    return trim_vals_us[1];
+  } else if (rc_chan == RC_CHAN_RUDDER) {
+    return trim_vals_us[2];
+  } else {
+    return RC_PWM_MIDSCALE_WIDTH_US;
+  }
 }

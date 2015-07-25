@@ -9,6 +9,7 @@
 #include "hmc5883.h"
 #include "bmp085.h"
 #include "ms4525do.h"
+#include "rc_receiver.h"
 
 #define SYSTEM_ID     (250)
 #define COMPONENT_ID  (125)
@@ -201,6 +202,9 @@ static int handle_syscmd(mavlink_syscmd_t *syscmd) {
     break;
   case HACS_GND_CMD_CALIBRATE_AIRSPEED:
     ms4525do_zero_cal();
+    break;
+  case HACS_GND_CMD_CALIBRATE_TRIM_VALUES:
+    rc_recvr_set_trim_vals();
     break;
   default: break;
   }

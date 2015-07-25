@@ -28,12 +28,12 @@ void hacs_pilot_cmd_task(void *param)
     mode = hacs_get_system_mode();
 
     if (mode == HACS_MODE_MANUAL) {
-      actuator_set_output(HACS_ACTUATOR_THROTTLE, rc_recvr_read_chan_scaled(RC_CHAN_THROTTLE));
-      actuator_set_output(HACS_ACTUATOR_AILERON, rc_recvr_read_chan_scaled(RC_CHAN_AILERON));
-      actuator_set_output(HACS_ACTUATOR_ELEVATOR, rc_recvr_read_chan_scaled(RC_CHAN_ELEVATOR));
-      actuator_set_output(HACS_ACTUATOR_RUDDER, rc_recvr_read_chan_scaled(RC_CHAN_RUDDER));
-      actuator_set_output(HACS_ACTUATOR_AUX_0, rc_recvr_read_chan_scaled(RC_CHAN_AUX_0));
-      actuator_set_output(HACS_ACTUATOR_AUX_1, rc_recvr_read_chan_scaled(RC_CHAN_AUX_1));
+      actuator_set_raw_us(HACS_ACTUATOR_THROTTLE, rc_recvr_read_chan_raw(RC_CHAN_THROTTLE));
+      actuator_set_raw_us(HACS_ACTUATOR_AILERON, rc_recvr_read_chan_raw(RC_CHAN_AILERON));
+      actuator_set_raw_us(HACS_ACTUATOR_ELEVATOR, rc_recvr_read_chan_raw(RC_CHAN_ELEVATOR));
+      actuator_set_raw_us(HACS_ACTUATOR_RUDDER, rc_recvr_read_chan_raw(RC_CHAN_RUDDER));
+      actuator_set_raw_us(HACS_ACTUATOR_AUX_0, rc_recvr_read_chan_raw(RC_CHAN_AUX_0));
+      actuator_set_raw_us(HACS_ACTUATOR_AUX_1, rc_recvr_read_chan_raw(RC_CHAN_AUX_1));
     }
   }
 }

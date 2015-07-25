@@ -22,6 +22,7 @@ typedef enum {
   HACS_PSTORE_MAG_HARD_CAL, // Magnetometer hard-iron calibration
   HACS_PSTORE_MAG_SOFT_CAL, // Magnetometer soft-iron calibration
   HACS_PSTORE_BARO_REF_CAL, // Barometer ground reference pressure
+  HACS_PSTORE_AIRSPEED_ZERO_CAL, // Airspeed zero offset
 
   HACS_PSTORE_NUM_ENTRIES,
 } hacs_pstore_type_t;
@@ -48,5 +49,10 @@ extern const uint16_t hacs_pstore_ent_size[HACS_PSTORE_NUM_ENTRIES];
                                        sizeof(hacs_pstore_entry_t) \
                                        + PSTORE_MAG_SOFT_CAL_LEN))
 #define PSTORE_BARO_GND_REF_LEN       (ALIGN_TO_WORD(sizeof(uint32_t)))
+
+#define PSTORE_AIRSPD_OFFSET_ADDR     (ALIGN_TO_WORD(PSTORE_BARO_GND_REF_ADDR + \
+                                       sizeof(hacs_pstore_entry_t) \
+                                       + PSTORE_BARO_GND_REF_LEN))
+#define PSTORE_AIRSPD_OFFSET_LEN      (ALIGN_TO_WORD(sizeof(float)))
 
 #endif

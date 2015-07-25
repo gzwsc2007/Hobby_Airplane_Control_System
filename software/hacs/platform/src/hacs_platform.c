@@ -15,6 +15,7 @@
 #include "mpu6050_serial.h"
 #include "bmp085.h"
 #include "ads1120.h"
+#include "ms4525do.h"
 #include "hacs_timer.h"
 #include "rc_receiver.h"
 #include "actuator.h"
@@ -87,14 +88,16 @@ void hacs_platform_init(void)
   // Wait for devices to settle
   delay_us(1000);
 
+  hacs_pstore_init();
+
   /* Early (pre-scheduler) init for devices */
   nrf24_early_init();
   gps_early_init();
   mpu6050_early_init();
   bmp085_early_init();
   ads1120_early_init();
+  ms4525do_early_init();
 
-  hacs_pstore_init();
   rc_recvr_init();
   actuator_init();
 }

@@ -27,6 +27,7 @@
 
 #define ALPHA_ACCEL     (0.7f)
 #define ALPHA_GYRO      (0.05f)
+#define ALPHA_AIRSPEED  (0.8f) // cutoff freq ~1 Hz with Ts == 40ms
 
 #define ADC_BATTERY_VOLT_CHAN       (ADS1120_SINGLE_ENDED_CHAN_3)
 // R_lower == 9960 ohm
@@ -45,7 +46,7 @@ void hacs_sensor_sched_task(void *param) {
   xQueueHandle gps_msg_queue = gps_get_msg_queue();
   mpu_data_t mpu_data;
   gps_data_t gps_data;
-  float airspeed = 0;
+  float airspeed = 0.0;
   float altitude;
   float batt_volt;
   float batt_current = 0;
@@ -97,8 +98,8 @@ void hacs_sensor_sched_task(void *param) {
       printf("bmp %d\r\n", retval);
     }
 
-    // obtain airspeed reading
-    airspeed = get_airspeed();
+    // obtain filtered airspeed reading
+    airspeed = get_airspeed() * (1.0-ALPHA_AIRSPEED) + airspeed * ALPHA_AIRSPEED;
 
     // obtain calibrated magnetic heading from compass
     hmc5883_xyz_calibrated(&calmx, &calmy, &calmz);
@@ -183,8 +184,13 @@ static float get_airspeed(void) {
   float dp = 0;
   float speed;
 
-  ms4525do_get_dp(&dp);
+  ms4525do_get_dp_calibrated(&dp);
+ 
+  if (dp > 0.0) {
   speed = sqrt(2 * dp / AIR_DENSITY_KG_M3);
+  } else {
+      speed = 0.0;
+  }
 
   return speed;
 }

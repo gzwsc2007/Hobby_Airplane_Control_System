@@ -8,6 +8,7 @@
 #include "hacs_system_config.h"
 #include "hmc5883.h"
 #include "bmp085.h"
+#include "ms4525do.h"
 
 #define SYSTEM_ID     (250)
 #define COMPONENT_ID  (125)
@@ -197,6 +198,9 @@ static int handle_syscmd(mavlink_syscmd_t *syscmd) {
     break;
   case HACS_GND_CMD_CALIBRATE_BAROMETER:
     bmp085_ground_calibration();
+    break;
+  case HACS_GND_CMD_CALIBRATE_AIRSPEED:
+    ms4525do_zero_cal();
     break;
   default: break;
   }

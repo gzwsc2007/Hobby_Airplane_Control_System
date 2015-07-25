@@ -15,7 +15,11 @@
 #include "ads1120.h"
 #include "hacs_system_config.h"
 #include "hacs_telemetry.h"
+#include "hacs_sysid.h"
+#include "actuator.h"
+#include "rc_receiver.h"
 
+#include "arm_math.h"
 #include "MadgwickAHRS.h"
 
 #define MPU6050_TIMEOUT_MS    (10)
@@ -168,9 +172,36 @@ void hacs_sensor_sched_task(void *param) {
                            gps_data.course, temperature, batt_volt);
     }
 
-    // TODO: decide what to send (e.g. send SysID packets?) depending on system state
+    // Conduct system identification experiemnt
     if (mode == HACS_MODE_SYSTEM_IDENTIFICATION) {
+      hacs_sysid_mode_t sysid_mode = hacs_get_sysid_mode();
+      int32_t aile_output, elev_output, rudd_output;
+      portTickType tick_count = xTaskGetTickCount();
 
+      // Generate output value if we are not in manual mode
+      if (sysid_mode != HACS_SYSID_MODE_MANUAL) {
+        int32_t actuator_output;
+
+        // Generate an output value
+        retval = hacs_sysid_generate_output(tick_count, SYSTEM_IDENT_AMPLITUDE, &actuator_output);
+        if (retval < 0) {
+          // Time to terminate experiment. Notify ground station that the current
+          // system mode has changed.
+          hacs_telem_send_syscmd(HACS_GND_CMD_GET_MODE, hacs_get_system_mode());
+        }
+      }
+
+      // Obtain actual output with trim removed (centered around trim values)
+      aile_output = actuator_get_output_us(HACS_ACTUATOR_AILERON) - rc_recvr_get_trim_val(RC_CHAN_AILERON);
+      elev_output = actuator_get_output_us(HACS_ACTUATOR_ELEVATOR) - rc_recvr_get_trim_val(RC_CHAN_ELEVATOR);
+      rudd_output = actuator_get_output_us(HACS_ACTUATOR_RUDDER) - rc_recvr_get_trim_val(RC_CHAN_RUDDER);
+
+      // Report data to ground station. Use raw data for accelerations and angule velocities.
+      // Filtering can be done in post-processing.
+      hacs_telem_send_sysid(tick_count, aile_output, elev_output, rudd_output,
+                            mpu_data.ax, mpu_data.ay, mpu_data.az, 
+                            roll, pitch, yaw,
+                            mpu_data.p, mpu_data.q, mpu_data.r);
     }
   }
 }
@@ -187,9 +218,9 @@ static float get_airspeed(void) {
   ms4525do_get_dp_calibrated(&dp);
  
   if (dp > 0.0) {
-  speed = sqrt(2 * dp / AIR_DENSITY_KG_M3);
+    arm_sqrt_f32(2 * dp / AIR_DENSITY_KG_M3, &speed);
   } else {
-      speed = 0.0;
+    speed = 0.0;
   }
 
   return speed;

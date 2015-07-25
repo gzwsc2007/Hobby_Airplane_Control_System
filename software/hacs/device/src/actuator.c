@@ -6,6 +6,7 @@
 
 static int32_t trim_vals_us[HACS_NUM_ACTUATOR]; // trim vals are in PWM width (us)
 static int32_t offsets_us[HACS_NUM_ACTUATOR]; // offsets in microseconds
+static int32_t output_us[HACS_NUM_ACTUATOR];
 
 int actuator_init(void)
 {
@@ -51,6 +52,8 @@ int actuator_set_raw_us(hacs_actuator_t chan, uint32_t width)
   if (width < RC_PWM_MIN_WIDTH_US) width = RC_PWM_MIN_WIDTH_US;
   else if (width > RC_PWM_MAX_WIDTH_US) width = RC_PWM_MAX_WIDTH_US;
 
+  output_us[chan] = width;
+
   return timer_set_pwm_width_us(actuator_to_pwm_map[chan], width);
 }
 
@@ -75,7 +78,12 @@ int actuator_set_output_scaled(hacs_actuator_t chan, int32_t val)
   width += offsets_us[chan];
 
   // width is guaranteed to be positive
-  return timer_set_pwm_width_us(actuator_to_pwm_map[chan], width);
+  return actuator_set_raw_us(chan, width);
+}
+
+int32_t actuator_get_output_us(hacs_actuator_t chan)
+{
+  return output_us[chan];
 }
 
 void actuator_reload_trimval_from_pstore(void)

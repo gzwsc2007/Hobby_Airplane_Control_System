@@ -1914,10 +1914,10 @@
       <name>$PROJ_DIR$\..\..\..\software\hacs\app\src\hacs_pstore_layout.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\software\hacs\app\src\hacs_sensor_cal.c</name>
+      <name>$PROJ_DIR$\..\..\..\software\hacs\app\src\hacs_sensor_sched.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\software\hacs\app\src\hacs_sensor_sched.c</name>
+      <name>$PROJ_DIR$\..\..\..\software\hacs\app\src\hacs_sysid.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\software\hacs\app\src\hacs_system_config.c</name>

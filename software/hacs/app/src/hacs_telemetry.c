@@ -2,6 +2,7 @@
 #include "hacs_platform.h"
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "task.h"
 #include "hacs_telemetry.h"
 #include "nrf24l01.h"
 #include "mavlink.h"
@@ -10,6 +11,7 @@
 #include "bmp085.h"
 #include "ms4525do.h"
 #include "rc_receiver.h"
+#include "hacs_sysid.h"
 
 #define SYSTEM_ID     (250)
 #define COMPONENT_ID  (125)
@@ -18,15 +20,19 @@ static xQueueHandle tx_queue;
 static uint8_t pfd_struct_busy;
 static uint8_t navd_struct_busy;
 static uint8_t magcal_struct_busy;
+static uint8_t sysid_struct_busy;
+static uint8_t syscmd_struct_busy;
 static mavlink_pfd_t pfd_s;
 static mavlink_navd_t navd_s;
 static mavlink_magcal_t magcal_s;
+static mavlink_systemid_t sysid_s;
+static mavlink_syscmd_t syscmd_s;
 // TODO: To save RAM, for RX, instead of having a struct for each message type,
 // I can have a single buffer that's large enough to hold any type
 // of message struct, and then just reuse the buffer and cast to
 // the appropriate struct each time. This is possible because we will
 // only ever be processing one RX packet at a time
-static mavlink_syscmd_t syscmd_s;
+static mavlink_syscmd_t syscmd_rx_s;
 static mavlink_magcalresult_t magcalresult_s;
 
 static mavlink_message_t rx_msg;
@@ -58,8 +64,8 @@ void hacs_telemetry_rx_task(void *param) {
         // Handle the message
         switch (rx_msg.msgid) {
         case MAVLINK_MSG_ID_SysCmd:
-          mavlink_msg_syscmd_decode(&rx_msg, &syscmd_s);
-          handle_syscmd(&syscmd_s);
+          mavlink_msg_syscmd_decode(&rx_msg, &syscmd_rx_s);
+          handle_syscmd(&syscmd_rx_s);
           break;
         case MAVLINK_MSG_ID_MagCalResult:
           mavlink_msg_magcalresult_decode(&rx_msg, &magcalresult_s);
@@ -95,6 +101,16 @@ void hacs_telemetry_tx_task(void *param) {
       assert(magcal_struct_busy);
       mavlink_msg_magcal_encode(SYSTEM_ID, COMPONENT_ID, &tx_msg, &magcal_s);
       magcal_struct_busy = 0;
+      break;
+    case TELEM_TX_SYSID:
+      assert(sysid_struct_busy);
+      mavlink_msg_systemid_encode(SYSTEM_ID, COMPONENT_ID, &tx_msg, &sysid_s);
+      sysid_struct_busy = 0;
+      break;
+    case TELEM_TX_SYSCMD:
+      assert(syscmd_struct_busy);
+      mavlink_msg_syscmd_encode(SYSTEM_ID, COMPONENT_ID, &tx_msg, &syscmd_s);
+      syscmd_struct_busy = 0;
       break;
     default:
       break;
@@ -187,6 +203,53 @@ int hacs_telem_send_magcal(int16_t magx, int16_t magy, int16_t magz) {
   return HACS_NO_ERROR;
 }
 
+int hacs_telem_send_syscmd(uint8_t cmd, uint32_t payload) {
+  const tx_type_t type = TELEM_TX_SYSCMD;
+
+  if (syscmd_struct_busy) {
+    return -HACS_ERR_ALREADY_IN_USE;
+  }
+  syscmd_struct_busy = 1;
+
+  syscmd_s.cmd = cmd;
+  syscmd_s.payload = payload;
+
+  xQueueSend(tx_queue, &type, portMAX_DELAY);
+
+  return HACS_NO_ERROR; 
+}
+
+int hacs_telem_send_sysid(uint32_t timestamp,
+                          int32_t u_a, int32_t u_e, int32_t u_r,
+                          float ax, float ay, float az,
+                          float roll, float pitch, float yaw,
+                          float p, float q, float r) {
+  const tx_type_t type = TELEM_TX_SYSID;
+
+  if (sysid_struct_busy) {
+    return -HACS_ERR_ALREADY_IN_USE;
+  }
+  sysid_struct_busy = 1;
+
+  sysid_s.timestamp = timestamp;
+  sysid_s.u_a = u_a;
+  sysid_s.u_e = u_e;
+  sysid_s.u_r = u_r;
+  sysid_s.ax = (int16_t)(ax * 100.0f); // in 0.01g
+  sysid_s.ay = (int16_t)(ay * 100.0f); // in 0.01g
+  sysid_s.az = (int16_t)(az * 100.0f); // in 0.01g
+  sysid_s.roll = (int16_t)(roll * 100.0f); // in 0.01 deg
+  sysid_s.pitch = (int16_t)(pitch * 100.0f); // in 0.01 deg
+  sysid_s.yaw = (int16_t)(yaw * 100.0f); // in 0.01 deg
+  sysid_s.p = (int16_t)(p * 10.0f); // in 0.1 deg/s
+  sysid_s.q = (int16_t)(q * 10.0f); // in 0.1 deg/s
+  sysid_s.r = (int16_t)(r * 10.0f); // in 0.1 deg/s
+
+  xQueueSend(tx_queue, &type, portMAX_DELAY);
+
+  return HACS_NO_ERROR;
+}
+
 static int handle_syscmd(mavlink_syscmd_t *syscmd) {
   int retval = 0;
   uint32_t payload = syscmd->payload;
@@ -194,6 +257,11 @@ static int handle_syscmd(mavlink_syscmd_t *syscmd) {
   switch (syscmd->cmd) {
   case HACS_GND_CMD_SET_MODE:
     hacs_set_system_mode((hacs_mode_t)payload);
+    if (payload == HACS_MODE_SYSTEM_IDENTIFICATION &&
+        hacs_get_sysid_mode() != HACS_SYSID_MODE_MANUAL) {
+      // Start the system id process
+      hacs_sysid_start(xTaskGetTickCount(), SYSTEM_IDENT_DURATION_US);
+    }
     break;
   case HACS_GND_CMD_GET_MODE:
     break;
@@ -205,6 +273,12 @@ static int handle_syscmd(mavlink_syscmd_t *syscmd) {
     break;
   case HACS_GND_CMD_CALIBRATE_TRIM_VALUES:
     rc_recvr_set_trim_vals();
+    break;
+  case HACS_GND_CMD_SET_SYSID_MODE:
+    hacs_set_sysid_mode((hacs_sysid_mode_t)payload);
+    break;
+  case HACS_GND_CMD_SET_SYSID_FREQ:
+    hacs_set_sysid_freq((hacs_sysid_freq_t)payload);
     break;
   default: break;
   }

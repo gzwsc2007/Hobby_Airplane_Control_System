@@ -10,6 +10,8 @@
 #define MAVLINK_HELPER
 #endif
 
+#define MAVLINK_CHECK_MESSAGE_LENGTH
+
 /*
  * Internal function to give access to the channel status for each channel
  */

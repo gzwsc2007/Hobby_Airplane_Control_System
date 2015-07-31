@@ -8,10 +8,10 @@
 #include "semphr.h"
 #include "ms4525do.h"
 
-#define STATUS_BIT_MASK   (0xA0)
+#define STATUS_BIT_MASK   (0xC0)
 #define STATUS_NORMAL     (0x00)
 #define STATUS_STALE      (0x80)
-#define STATUS_FAULT      (0xA0)
+#define STATUS_FAULT      (0xC0)
 
 #define RAW_COUNT_MIN     (0x0666)
 #define RAW_COUNT_MAX     (0x399A)

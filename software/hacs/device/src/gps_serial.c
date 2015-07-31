@@ -19,11 +19,11 @@ static void gps_ht_cb(uint32_t len_read);
 static void gps_tc_cb(uint32_t len_read);
 static void gps_parser_fsm(uint8_t *pdata, uint32_t len);
 static int gps_parse_string(char *s, gps_data_t *g);
-static void parse_GPRMC_block(char* b, int8_t i, gps_data_t* g);
+static int parse_GPRMC_block(char* b, int8_t i, gps_data_t* g);
 /* Helper functions borrowed from:
     https://github.com/offchooffcho/STM32-1/blob/master/GPSTracker/car/nmea.c
  */
-static int32_t NMEA_convertLatLong(char *b);
+static int NMEA_convertLatLong(char *b, int32_t *p_result);
 static int32_t NMEA_atoi(const char *s);
 
 int gps_early_init(void) {
@@ -101,6 +101,7 @@ static int gps_parse_string(char *s, gps_data_t *g) {
   // a block for interpretation
   char *block;
   int8_t index = 1;  // block index
+  int retval = -HACS_GPS_FORMAT_NOT_SUPPORTED;
 
   // determine the format of the string (can be used to extend to other format)
   if (strncmp(s, "$GPRMC", 6)) {
@@ -114,7 +115,8 @@ static int gps_parse_string(char *s, gps_data_t *g) {
     if (*s == ',')
     {
       *s = '\0';  // set the "end" of a block
-      parse_GPRMC_block(block, index, g);
+      retval = parse_GPRMC_block(block, index, g);
+      HACS_REQUIRES(retval >= 0, done);
       s++;
       index++;
       block = s;
@@ -123,14 +125,16 @@ static int gps_parse_string(char *s, gps_data_t *g) {
     s++;
   }
 
-  return 0;
+done:
+  return retval;;
 }
 
 /* Helper function to parse GPRMC string */
-static void parse_GPRMC_block(char* b, int8_t i, gps_data_t* g) {
+static int parse_GPRMC_block(char* b, int8_t i, gps_data_t* g) {
   int32_t temp;
+  int retval = HACS_NO_ERROR;
 
-  if (*b == '\0') return;
+  if (*b == '\0') return retval;
 
   switch (i)
   {
@@ -141,7 +145,7 @@ static void parse_GPRMC_block(char* b, int8_t i, gps_data_t* g) {
     break;
   // Latitude
   case 3:
-    g->latitude = NMEA_convertLatLong(b);
+    retval = NMEA_convertLatLong(b, &g->latitude);
     break;
   // N or S Hemisphere
   case 4:
@@ -149,7 +153,7 @@ static void parse_GPRMC_block(char* b, int8_t i, gps_data_t* g) {
     break;
   // Longitude
   case 5:
-    g->longitude = NMEA_convertLatLong(b);
+    retval = NMEA_convertLatLong(b, &g->longitude);
     break;
   // E or W Hemisphere
   case 6:
@@ -165,18 +169,24 @@ static void parse_GPRMC_block(char* b, int8_t i, gps_data_t* g) {
     g->course = (uint16_t)NMEA_atoi(b);
     break;
   }
+
+  return retval;
 }
 
 /*
  * Helper function to convert raw GPRMC lat/long string to an integer
  * with unit 10^-7 degree.
  */
-static int32_t NMEA_convertLatLong(char *b) {
+static int NMEA_convertLatLong(char *b, int32_t* p_result) {
   char *tmp = strchr(b, '.'); // locate the '.' char
   double min;
   int minDec;
   int deg;
   int result;
+
+  if (tmp == NULL) {
+    return -HACS_GPS_FORMAT_NOT_SUPPORTED;
+  }
 
   // convert the decimal portion of min
   minDec = NMEA_atoi(tmp + 1);
@@ -195,8 +205,9 @@ static int32_t NMEA_convertLatLong(char *b) {
   result = deg * 10000000; // scale 1 deg to 10^-7 deg
   min = (min / 60.0) * 10000000.0; // convert minute to 10^-7 deg
 
-  result = result + (int32_t)min;
-  return result;
+  *p_result = result + (int32_t)min;
+
+  return HACS_NO_ERROR;
 }
 
 /*

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 #include "hacs_platform.h"
 #include "hacs_platform_resources.h"
 #include "hacs_debug_uart.h"
@@ -184,6 +185,7 @@ void vApplicationStackOverflowHook() {
 
 static void error_handler(void)
 {
+  assert(0);
   while (1)
   {
   }
@@ -211,4 +213,14 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t dummy)
 uint32_t HAL_GetTick(void)
 {
   return xTaskGetTickCount();
+}
+
+void NMI_Handler(void)
+{
+  error_handler();
+}
+
+void HardFault_Handler(void)
+{
+  error_handler();
 }

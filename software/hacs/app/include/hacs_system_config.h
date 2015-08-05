@@ -12,6 +12,8 @@ typedef enum {
   HACS_GND_CMD_SET_SYSID_MODE,
   HACS_GND_CMD_SET_SYSID_FREQ,
 
+  HACS_GND_CMD_TELEM_TEST,
+
   HACS_GND_CMD_SENTINEL,
 } hacs_gnd_cmd_t;
 

@@ -35,12 +35,14 @@ static mavlink_syscmd_t syscmd_s;
 static mavlink_syscmd_t syscmd_rx_s;
 static mavlink_magcalresult_t magcalresult_s;
 
+static mavlink_status_t mv_parser_status;
 static mavlink_message_t rx_msg;
 static mavlink_message_t tx_msg;
 static uint8_t tx_buf[MAVLINK_MAX_PACKET_LEN];
 
 static int radio_send_wrapper(uint8_t *data, uint32_t len);
 static int handle_syscmd(mavlink_syscmd_t *syscmd);
+static void handle_telem_test(uint32_t count);
 
 int hacs_telemetry_early_init() {
   pfd_struct_busy = 0;
@@ -54,13 +56,12 @@ void hacs_telemetry_rx_task(void *param) {
   nrf24_msg_t rx;
   xQueueHandle nrf24_queue = nrf24_get_msg_queue();
   uint8_t idx;
-  mavlink_status_t status;
 
   while (1) {
     xQueueReceive(nrf24_queue, &rx, portMAX_DELAY);
 
     for (idx = 0; idx < rx.len; idx++) {
-      if (mavlink_parse_char(MAVLINK_COMM_0, rx.buf[idx], &rx_msg, &status)) {
+      if (mavlink_parse_char(MAVLINK_COMM_0, rx.buf[idx], &rx_msg, &mv_parser_status)) {
         // Handle the message
         switch (rx_msg.msgid) {
         case MAVLINK_MSG_ID_SysCmd:
@@ -280,8 +281,25 @@ static int handle_syscmd(mavlink_syscmd_t *syscmd) {
   case HACS_GND_CMD_SET_SYSID_FREQ:
     hacs_set_sysid_freq((hacs_sysid_freq_t)payload);
     break;
+  case HACS_GND_CMD_TELEM_TEST:
+    handle_telem_test(payload);
+    break;
   default: break;
   }
 
   return retval;
+}
+
+static void handle_telem_test(uint32_t count) {
+  static uint32_t my_count = 0;
+
+  if (count == 0xFFFFFFFF) {
+    // restart the test
+    my_count = 0;
+    return;
+  }
+
+  // Report packet loss
+  hacs_telem_send_syscmd(HACS_GND_CMD_TELEM_TEST, my_count);
+  my_count++;
 }

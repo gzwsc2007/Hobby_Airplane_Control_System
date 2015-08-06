@@ -32,7 +32,7 @@ int hacs_pstore_init()
     if (b_version0 == 0xFFFFFFFF && b_version1 == 0) {
       current_bank_addr = HACS_PSTORE_1_ADDR;
       alternate_bank_addr = HACS_PSTORE_0_ADDR;
-    } else if (b_version0 = 0 && b_version1 == 0xFFFFFFFF) {
+    } else if (b_version0 == 0 && b_version1 == 0xFFFFFFFF) {
       current_bank_addr = HACS_PSTORE_0_ADDR;
       alternate_bank_addr = HACS_PSTORE_1_ADDR;
     } else if (b_version0 < b_version1) {

@@ -47,7 +47,9 @@ static void bmp085_driver_task(void *param) {
     // If the read fails, use a default value.
     press_ref = DEFAULT_GROUND_LEVEL_PRESSURE_PA;
   }
+  hacs_enter_critical();
   printf("bmp ref pressures: %d\r\n", press_ref);
+  hacs_exit_critical();
 
   while (1) {
     // Wait to be notified

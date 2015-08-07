@@ -33,6 +33,9 @@
 #define ALPHA_GYRO      (0.05f)
 #define ALPHA_AIRSPEED  (0.8f) // cutoff freq ~1 Hz with Ts == 40ms
 
+#define ADC_BATTERY_CURR_CHAN       (ADS1120_SINGLE_ENDED_CHAN_0)
+#define AMPEREMETER_FULLSCALE_A     (50.0)
+
 #define ADC_BATTERY_VOLT_CHAN       (ADS1120_SINGLE_ENDED_CHAN_3)
 // R_lower == 9960 ohm
 // R_upper == 32820 ohm
@@ -44,6 +47,7 @@ uint8_t g_sensor_log_enable = 0;
 
 static void bmp085_done_cb(int retval);
 static float get_airspeed(void);
+static float get_batt_current(void);
 
 void hacs_sensor_sched_task(void *param) {
   xQueueHandle mpu_msg_queue = mpu6050_get_msg_queue();
@@ -108,10 +112,16 @@ void hacs_sensor_sched_task(void *param) {
     // obtain calibrated magnetic heading from compass
     hmc5883_xyz_calibrated(&calmx, &calmy, &calmz);
 
+    // obtain amperemeter reading
+    batt_current = get_batt_current();
+
     // Poll GPS for data. Don't need to block because GPS is much slower.
     gps_data_available = xQueueReceive(gps_msg_queue, &gps_data, 0);
 
-    xQueueReceive(mpu_msg_queue, &mpu_data, MS_TO_TICKS(MPU6050_TIMEOUT_MS));
+    if (!xQueueReceive(mpu_msg_queue, &mpu_data, MS_TO_TICKS(MPU6050_TIMEOUT_MS))) {
+      // in case of a timeout, manually stop the parsing.
+      mpu6050_stop_parsing();
+    }
 
     // Use a simple first order IIR filter to low-pass filter the accel and gyro readings
     gx = mpu_data.p * (1.0-ALPHA_GYRO) + gx * ALPHA_GYRO;
@@ -224,4 +234,13 @@ static float get_airspeed(void) {
   }
 
   return speed;
+}
+
+static float get_batt_current(void) {
+  float ratiometric = 0.0;
+
+  // Returns ratiometric in the range of [0,1]
+  ads1120_read_single_ended(ADC_BATTERY_CURR_CHAN, ADS1120_REF_RATIOMETRIC, &ratiometric);
+
+  return (0.5 - ratiometric) / 0.4 * AMPEREMETER_FULLSCALE_A; // 0.5 is the midpoint of [0,1]
 }

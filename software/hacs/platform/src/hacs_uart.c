@@ -82,7 +82,9 @@ int hacs_uart_start_listening(hacs_uart_t bus, uint32_t buf, uint32_t size,
   if (uart_locks[bus] == BUS_IN_USE) {
     return -HACS_ERR_ALREADY_IN_USE;
   }
+  hacs_enter_critical();
   uart_locks[bus] = BUS_IN_USE;
+  hacs_exit_critical();
 
   uart_rx_ht_cb[bus] = ht_cb;
   uart_rx_tc_cb[bus] = tc_cb;
@@ -118,7 +120,9 @@ int hacs_uart_stop_listening(hacs_uart_t bus) {
 
   retval = HAL_DMA_Abort(hdma);
 
+  hacs_enter_critical();
   uart_locks[bus] = BUS_IDLE;
+  hacs_exit_critical();
 
   return retval;
 }

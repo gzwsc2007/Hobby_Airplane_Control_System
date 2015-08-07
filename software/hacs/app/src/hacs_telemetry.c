@@ -257,12 +257,13 @@ static int handle_syscmd(mavlink_syscmd_t *syscmd) {
 
   switch (syscmd->cmd) {
   case HACS_GND_CMD_SET_MODE:
-    hacs_set_system_mode((hacs_mode_t)payload);
     if (payload == HACS_MODE_SYSTEM_IDENTIFICATION &&
         hacs_get_sysid_mode() != HACS_SYSID_MODE_MANUAL) {
       // Start the system id process
       hacs_sysid_start(xTaskGetTickCount(), SYSTEM_IDENT_DURATION_US);
+      vTaskDelay(MS_TO_TICKS(20));
     }
+    hacs_set_system_mode((hacs_mode_t)payload);
     break;
   case HACS_GND_CMD_GET_MODE:
     break;

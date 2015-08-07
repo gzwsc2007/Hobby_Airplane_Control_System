@@ -130,6 +130,7 @@ void gpio_exti_enable(gpio_port_t port, gpio_pin_t pin,
   uint32_t pin_num = gpio_pin_to_num(pin);
 
   // set trigger polarity
+  hacs_enter_critical();
   temp = EXTI->RTSR;
   temp &= ~pin32;
   if (rise) {
@@ -143,6 +144,7 @@ void gpio_exti_enable(gpio_port_t port, gpio_pin_t pin,
     temp |= pin32;
   }
   EXTI->FTSR = temp;
+  hacs_exit_critical();
 
   // Configure NVIC on the appropriate IRQ
   IRQn_Type irq;

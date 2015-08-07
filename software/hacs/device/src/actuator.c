@@ -98,6 +98,13 @@ void actuator_reload_trimval_from_pstore(void)
   }
 }
 
+void actuator_set_trimval_cache(int32_t aile, int32_t elev, int32_t rudd)
+{
+  trim_vals_us[HACS_ACTUATOR_AILERON] = aile;
+  trim_vals_us[HACS_ACTUATOR_ELEVATOR] = elev;
+  trim_vals_us[HACS_ACTUATOR_RUDDER] = rudd;
+}
+
 void actuator_set_offset(hacs_actuator_t chan, int32_t offset)
 {
   offsets_us[chan] = offset;

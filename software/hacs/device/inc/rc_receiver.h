@@ -13,5 +13,8 @@ int rc_recvr_wait_for_sample(void);
 int rc_recvr_set_trim_vals(void);
 // Get trim values. rc_chan can only be AILE, ELEV or RUDD
 int32_t rc_recvr_get_trim_val(hacs_rc_chan_t rc_chan);
-
+// Set trim val cache in RAM. Does not store to PSTORE. Saving things to
+// PSTORE will mess up with the RC channel readings, which is not ideal in
+// some cases.
+void rc_recvr_set_trim_vals_cache(void);
 #endif

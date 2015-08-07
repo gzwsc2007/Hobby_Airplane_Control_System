@@ -8,11 +8,13 @@
 #include "semphr.h"
 #include "actuator.h"
 
-#define LAST_CHANNEL    RC_CHAN_AUX_0
+#define DECODE_PHASE_WAIT_FOR_RISING    (0)
+#define DECODE_PHASE_WAIT_FOR_FALLING   (1)
+#define DECODE_PHASE_COMPLETE           (2)
 
 static volatile uint32_t start_time[HACS_NUM_RC_CHAN];
 static volatile uint32_t rc_chan_readings[HACS_NUM_RC_CHAN];
-static volatile uint8_t seen_rise[HACS_NUM_RC_CHAN];
+static volatile uint8_t decode_phase[HACS_NUM_RC_CHAN];
 static xSemaphoreHandle sample_complete;
 static int32_t trim_vals_us[3];
 
@@ -26,18 +28,29 @@ static int32_t pulse_width_to_chan_reading(hacs_rc_chan_t chan, uint32_t width_u
   return scaled;
 }
 
+static uint8_t is_sampling_done(void)
+{
+  for (int i = 0; i < HACS_NUM_RC_CHAN; i++) {
+    if (decode_phase[i] != DECODE_PHASE_COMPLETE) {
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
 static void decode(hacs_rc_chan_t chan)
 {
-  if (!seen_rise[chan]) {
-    seen_rise[chan] = 1;
+  if (decode_phase[chan] == DECODE_PHASE_WAIT_FOR_RISING) {
+    decode_phase[chan] = DECODE_PHASE_WAIT_FOR_FALLING;
 
     // Remember the current time stamp and get ready for falling edge detection
     start_time[chan] = timer_get_us(HACS_BASIC_TIMER);
     gpio_exti_enable(rc_chan_to_gpio_map[chan].port,
                      rc_chan_to_gpio_map[chan].pin,
                      0, 1);
-  } else {
-    seen_rise[chan] = 0;
+  } else if (decode_phase[chan] == DECODE_PHASE_WAIT_FOR_FALLING) {
+    decode_phase[chan] = DECODE_PHASE_COMPLETE;
 
     // Get the channel reading
     rc_chan_readings[chan] = timer_get_us(HACS_BASIC_TIMER) - start_time[chan];
@@ -47,9 +60,14 @@ static void decode(hacs_rc_chan_t chan)
                      rc_chan_to_gpio_map[chan].pin,
                      1, 0);
 
-    // If this is the last channel, restart the timer and signal sampling complete
-    if (chan == LAST_CHANNEL) {
+    // If all the channels have been updated, restart the timer and signal sampling complete
+    if (is_sampling_done()) {
       portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+
+      // Reset all channel decoders
+      for (int i = 0; i < HACS_NUM_RC_CHAN; i++) {
+        decode_phase[i] = DECODE_PHASE_WAIT_FOR_RISING;
+      }
 
       timer_reset_n_go(HACS_BASIC_TIMER);
       xSemaphoreGiveFromISR(sample_complete, &xHigherPriorityTaskWoken);
@@ -100,7 +118,7 @@ int rc_recvr_init(void)
   }
 
   // Set counting timer expire time to 100s
-  timer_set_period(HACS_BASIC_TIMER, 100000000);
+  timer_set_period(HACS_BASIC_TIMER, 100000000UL);
 
   gpio_init_pin(RC_CHAN1_PORT, RC_CHAN1_PIN, HACS_GPIO_MODE_INPUT,
                 HACS_GPIO_NO_PULL);
@@ -194,6 +212,15 @@ int rc_recvr_set_trim_vals(void)
   actuator_reload_trimval_from_pstore();
 
   return retval;
+}
+
+void rc_recvr_set_trim_vals_cache(void)
+{
+  trim_vals_us[0] = rc_chan_readings[RC_CHAN_AILERON];
+  trim_vals_us[1] = rc_chan_readings[RC_CHAN_ELEVATOR];
+  trim_vals_us[2] = rc_chan_readings[RC_CHAN_RUDDER];
+
+  actuator_set_trimval_cache(trim_vals_us[0], trim_vals_us[1], trim_vals_us[2]);
 }
 
 // Get trim values. rc_chan can only be AILE, ELEV or RUDD

@@ -18,4 +18,6 @@ void actuator_reload_trimval_from_pstore(void);
 
 int32_t actuator_get_output_us(hacs_actuator_t chan);
 
+void actuator_set_trimval_cache(int32_t aile, int32_t elev, int32_t rudd);
+
 #endif

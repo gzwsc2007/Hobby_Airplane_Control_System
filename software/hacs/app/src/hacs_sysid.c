@@ -13,6 +13,7 @@
 #include "rc_receiver.h"
 #include "actuator.h"
 #include "arm_math.h"
+#include "hacs_telemetry.h"
 
 #define FREQ_LOWER_START_HZ     (0.1f)
 #define FREQ_LOWER_END_HZ       (4.0f)
@@ -30,8 +31,16 @@ void hacs_sysid_start(uint32_t timestamp, uint32_t duration_ms)
   t0_ms = timestamp;
   t1_ms = timestamp + duration_ms;
 
-  // Take the current RC inputs as trim values.
-  rc_recvr_set_trim_vals();
+  // Take the current RC inputs as trim values. Does not store to PSTORE
+  rc_recvr_set_trim_vals_cache();
+
+  // Report trim values for this experiment
+  hacs_telem_send_sysid(-1, rc_recvr_get_trim_val(RC_CHAN_AILERON),
+                        rc_recvr_get_trim_val(RC_CHAN_ELEVATOR),
+                        rc_recvr_get_trim_val(RC_CHAN_RUDDER),
+                        0, 0, 0,
+                        0, 0, 0,
+                        0, 0, 0);
 
   // Set all three channels to neutral, no offsets
   actuator_set_offset(HACS_ACTUATOR_AILERON, 0);
@@ -66,6 +75,14 @@ int hacs_sysid_generate_output(uint32_t timestamp, float amplitude, int32_t *pou
 
   // check for termination first
   if (timestamp >= t1_ms) {
+    // Clear offsets
+    actuator_set_offset(HACS_ACTUATOR_AILERON, 0);
+    actuator_set_offset(HACS_ACTUATOR_ELEVATOR, 0);
+    actuator_set_offset(HACS_ACTUATOR_RUDDER, 0);
+    actuator_set_output_scaled(HACS_ACTUATOR_AILERON, 0);
+    actuator_set_output_scaled(HACS_ACTUATOR_ELEVATOR, 0);
+    actuator_set_output_scaled(HACS_ACTUATOR_RUDDER, 0);
+    // Go back to manual mode
     hacs_set_system_mode(HACS_MODE_MANUAL);
     return -1;
   }
